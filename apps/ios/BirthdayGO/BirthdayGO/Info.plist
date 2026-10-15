@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>en</string>
+  <key>CFBundleDisplayName</key>
+  <string>Birthday GO</string>
+  <key>CFBundleExecutable</key>
+  <string>$(EXECUTABLE_NAME)</string>
+  <key>CFBundleIdentifier</key>
+  <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+  <key>CFBundleInfoDictionaryVersion</key>
+  <string>6.0</string>
+  <key>CFBundleName</key>
+  <string>$(PRODUCT_NAME)</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>1.0</string>
+  <key>CFBundleVersion</key>
+  <string>1</string>
+  <key>UILaunchScreen</key>
+  <dict>
+    <key>UIColorName</key>
+    <string>LaunchBackground</string>
+  </dict>
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>Birthday GO uses your location while the app is open to unlock birthday surprises at meaningful places.</string>
+  <key>NSCameraUsageDescription</key>
+  <string>Birthday GO uses your camera to discover and catch characters in the real world.</string>
+  <key>NSMotionUsageDescription</key>
+  <string>Birthday GO uses motion activity while the app is open to count walking toward egg hatching and ignore subway or car travel.</string>
+  <key>BG_API_BASE_URL</key>
+  <string>https://ookqnalokcpqvdojmcmy.supabase.co/functions/v1/</string>
+  <key>BG_SUPABASE_ANON_KEY</key>
+  <string>sb_publishable_DEnBR0L7_tN5veEl9nMGNA_5zsIZVI6</string>
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSAllowsLocalNetworking</key>
+    <true/>
+  </dict>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLSchemes</key>
+      <array><string>birthdaygo</string></array>
+    </dict>
+  </array>
+  <key>UIRequiresFullScreen</key>
+  <true/>
+  <key>UISupportedInterfaceOrientations</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+  </array>
+</dict>
+</plist>

@@ -1,0 +1,39 @@
+project_id = "ookqnalokcpqvdojmcmy"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+
+[db]
+port = 54322
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback", "birthdaygo://auth"]
+enable_signup = false
+
+[functions.player-redeem]
+verify_jwt = false
+
+[functions.player-sync]
+verify_jwt = false
+
+[functions.player-recover]
+verify_jwt = false
+
+[functions.player-progress]
+verify_jwt = false
+
+[functions.contributor-submit]
+verify_jwt = false
+
+[functions.player-join]
+verify_jwt = false

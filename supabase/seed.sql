@@ -1,0 +1,4 @@
+-- Development seed is intentionally empty of personal birthday content.
+-- Create an organizer through Supabase Auth (public signup is disabled),
+-- then build the adventure in the organizer portal.
+-- SQL fixtures for captures, rewards, and RLS live in supabase/tests/.

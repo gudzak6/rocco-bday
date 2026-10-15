@@ -1,0 +1,13 @@
+{
+  "name": "birthday-go",
+  "private": true,
+  "packageManager": "pnpm@10.12.1",
+  "scripts": {
+    "dev": "pnpm --filter @birthday-go/admin dev",
+    "build": "pnpm --filter @birthday-go/admin build",
+    "lint": "pnpm -r lint",
+    "test": "pnpm -r test",
+    "test:e2e": "pnpm --filter @birthday-go/admin test:e2e",
+    "typecheck": "pnpm -r typecheck"
+  }
+}

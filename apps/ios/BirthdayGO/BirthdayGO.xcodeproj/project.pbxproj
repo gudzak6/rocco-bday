@@ -1,0 +1,611 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2FF8DD49A23C403E4380B00F /* ProximityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AA2435750609ADF48A2E26 /* ProximityTests.swift */; };
+		36CAE3406F5ECC8433E52BCF /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97765AAEF0EAE6FE8F7310D1 /* Models.swift */; };
+		3920FD690B6075DD0492F184 /* GameStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52D273B72C9B0BF3E9D02529 /* GameStore.swift */; };
+		3A1543839145DA57E9A056B6 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B538296273176B2A7FBCD /* LocationService.swift */; };
+		3E15B38B60EC151E44270D89 /* BirthdayGOUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84356F090A734A5425FEE554 /* BirthdayGOUITests.swift */; };
+		3EA9E12786FB114C27447125 /* LibraryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00E33456C419FD124C2BCB4 /* LibraryViews.swift */; };
+		4C1A9E08B1D24F6A8E0C3311 /* BirthdayNotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2B7D41C0E34A9B91A15520 /* BirthdayNotes.swift */; };
+		5A7E2C19D4F14B8A90C26630 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B8F1A20C3E24C7D81D15540 /* OnboardingView.swift */; };
+		A1E66CA7A10E4001B1DAE601 /* EggCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAE601 /* EggCatalog.swift */; };
+		A1E66CA7A10E4001B1DAE602 /* WalkTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAE602 /* WalkTracker.swift */; };
+		A1E66CA7A10E4001B1DAE603 /* EggPlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAE603 /* EggPlay.swift */; };
+		A1E66CA7A10E4001B1DAE604 /* EggTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAE604 /* EggTests.swift */; };
+		A1E66CA7A10E4001B1DAF701 /* MemoryMomentCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAF701 /* MemoryMomentCatalog.swift */; };
+		A1E66CA7A10E4001B1DAF702 /* MemoryMomentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAF702 /* MemoryMomentViews.swift */; };
+		A1E66CA7A10E4001B1DAF703 /* MemoryMomentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAF703 /* MemoryMomentTests.swift */; };
+		A1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift */; };
+		42BB0841A4C370ED4413131A /* CheckpointPlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C7DFB9511AD57382CCF6D5 /* CheckpointPlay.swift */; };
+		43DE9FC89964C72EDC77EFF2 /* CheckpointCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 573C29BE9A47116E21F2CBAA /* CheckpointCatalog.swift */; };
+		52861455705594657038B4DE /* ARCatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C0A3C0EFBF59E631D205DE /* ARCatchView.swift */; };
+		5EF26B3DE94B608C9AD70DE9 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06122F5A8F7ED51617B68187 /* ExploreView.swift */; };
+		642A7161BD29C84BA37F9AF4 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0D755897FEC3919FB0C5AE0 /* APIClient.swift */; };
+		934802BBCD7A6BBBE31E0A53 /* BirthdayGOApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87ACABFA7F6110EF1BC98937 /* BirthdayGOApp.swift */; };
+		97C0F574857DC3DFD46C7DC2 /* CatCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF85CCDC750E4A66D34F2A1 /* CatCatalog.swift */; };
+		DCA8DC63FF1CC6581A36A6E3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0D460DF451FB24297C37812A /* Assets.xcassets */; };
+		E91C1648D7D32E61A2A9C6BB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 72915B7CBD767B8367687CF9 /* PrivacyInfo.xcprivacy */; };
+		FD5B4E154BD65F082D8588B4 /* CatchGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29D7B8D51554B5961BDE155C /* CatchGameView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		191AA627992D83A0D588C2BE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8B333172DDE630A72AD1FF2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E0E1D8EA83FBFD87EABF51EC;
+			remoteInfo = BirthdayGO;
+		};
+		23AEB02ED14EFD83A0CAD516 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8B333172DDE630A72AD1FF2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = E0E1D8EA83FBFD87EABF51EC;
+			remoteInfo = BirthdayGO;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		06122F5A8F7ED51617B68187 /* ExploreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExploreView.swift; sourceTree = "<group>"; };
+		0D460DF451FB24297C37812A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		25964916A12959406D006244 /* BirthdayGOUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BirthdayGOUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		25C7DFB9511AD57382CCF6D5 /* CheckpointPlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPlay.swift; sourceTree = "<group>"; };
+		29D7B8D51554B5961BDE155C /* CatchGameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatchGameView.swift; sourceTree = "<group>"; };
+		2E417A43F9CECB0E3AFA703C /* BirthdayGOTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = BirthdayGOTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3FF85CCDC750E4A66D34F2A1 /* CatCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatCatalog.swift; sourceTree = "<group>"; };
+		52D273B72C9B0BF3E9D02529 /* GameStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStore.swift; sourceTree = "<group>"; };
+		573C29BE9A47116E21F2CBAA /* CheckpointCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointCatalog.swift; sourceTree = "<group>"; };
+		72915B7CBD767B8367687CF9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		7E79A681FAFCB5F1A64229CF /* BirthdayGO.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BirthdayGO.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8F2B7D41C0E34A9B91A15520 /* BirthdayNotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayNotes.swift; sourceTree = "<group>"; };
+		6B8F1A20C3E24C7D81D15540 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		C1E66CA7A10E4001B1DAE601 /* EggCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EggCatalog.swift; sourceTree = "<group>"; };
+		C1E66CA7A10E4001B1DAE602 /* WalkTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkTracker.swift; sourceTree = "<group>"; };
+		C1E66CA7A10E4001B1DAE603 /* EggPlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EggPlay.swift; sourceTree = "<group>"; };
+		C1E66CA7A10E4001B1DAE604 /* EggTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EggTests.swift; sourceTree = "<group>"; };
+		C1E66CA7A10E4001B1DAF701 /* MemoryMomentCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMomentCatalog.swift; sourceTree = "<group>"; };
+		C1E66CA7A10E4001B1DAF702 /* MemoryMomentViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMomentViews.swift; sourceTree = "<group>"; };
+		C1E66CA7A10E4001B1DAF703 /* MemoryMomentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMomentTests.swift; sourceTree = "<group>"; };
+		C1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelStopTests.swift; sourceTree = "<group>"; };
+		84356F090A734A5425FEE554 /* BirthdayGOUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayGOUITests.swift; sourceTree = "<group>"; };
+		87ACABFA7F6110EF1BC98937 /* BirthdayGOApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayGOApp.swift; sourceTree = "<group>"; };
+		97765AAEF0EAE6FE8F7310D1 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A4AA2435750609ADF48A2E26 /* ProximityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityTests.swift; sourceTree = "<group>"; };
+		ACD9C92738D47C8D3D5EEBFD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B0D755897FEC3919FB0C5AE0 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		B8C0A3C0EFBF59E631D205DE /* ARCatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARCatchView.swift; sourceTree = "<group>"; };
+		BC6B538296273176B2A7FBCD /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
+		E00E33456C419FD124C2BCB4 /* LibraryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViews.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0CDC99BC243497ECFED5E064 /* BirthdayGOUITests */ = {
+			isa = PBXGroup;
+			children = (
+				84356F090A734A5425FEE554 /* BirthdayGOUITests.swift */,
+			);
+			path = BirthdayGOUITests;
+			sourceTree = "<group>";
+		};
+		5ED3589A84314CDDE12DF5FA = {
+			isa = PBXGroup;
+			children = (
+				77111283AF7B98F25CAFE5AD /* BirthdayGO */,
+				79B385813BF028576C19F8C8 /* BirthdayGOTests */,
+				0CDC99BC243497ECFED5E064 /* BirthdayGOUITests */,
+				B4E0350127BF674E23FA2D4C /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		77111283AF7B98F25CAFE5AD /* BirthdayGO */ = {
+			isa = PBXGroup;
+			children = (
+				B0D755897FEC3919FB0C5AE0 /* APIClient.swift */,
+				B8C0A3C0EFBF59E631D205DE /* ARCatchView.swift */,
+				0D460DF451FB24297C37812A /* Assets.xcassets */,
+				87ACABFA7F6110EF1BC98937 /* BirthdayGOApp.swift */,
+				8F2B7D41C0E34A9B91A15520 /* BirthdayNotes.swift */,
+				3FF85CCDC750E4A66D34F2A1 /* CatCatalog.swift */,
+				C1E66CA7A10E4001B1DAE601 /* EggCatalog.swift */,
+				C1E66CA7A10E4001B1DAE603 /* EggPlay.swift */,
+				C1E66CA7A10E4001B1DAE602 /* WalkTracker.swift */,
+				29D7B8D51554B5961BDE155C /* CatchGameView.swift */,
+				573C29BE9A47116E21F2CBAA /* CheckpointCatalog.swift */,
+				25C7DFB9511AD57382CCF6D5 /* CheckpointPlay.swift */,
+				06122F5A8F7ED51617B68187 /* ExploreView.swift */,
+				52D273B72C9B0BF3E9D02529 /* GameStore.swift */,
+				ACD9C92738D47C8D3D5EEBFD /* Info.plist */,
+				E00E33456C419FD124C2BCB4 /* LibraryViews.swift */,
+				C1E66CA7A10E4001B1DAF701 /* MemoryMomentCatalog.swift */,
+				C1E66CA7A10E4001B1DAF702 /* MemoryMomentViews.swift */,
+				BC6B538296273176B2A7FBCD /* LocationService.swift */,
+				97765AAEF0EAE6FE8F7310D1 /* Models.swift */,
+				6B8F1A20C3E24C7D81D15540 /* OnboardingView.swift */,
+				72915B7CBD767B8367687CF9 /* PrivacyInfo.xcprivacy */,
+			);
+			path = BirthdayGO;
+			sourceTree = "<group>";
+		};
+		79B385813BF028576C19F8C8 /* BirthdayGOTests */ = {
+			isa = PBXGroup;
+			children = (
+				A4AA2435750609ADF48A2E26 /* ProximityTests.swift */,
+				C1E66CA7A10E4001B1DAE604 /* EggTests.swift */,
+				C1E66CA7A10E4001B1DAF703 /* MemoryMomentTests.swift */,
+				C1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift */,
+			);
+			path = BirthdayGOTests;
+			sourceTree = "<group>";
+		};
+		B4E0350127BF674E23FA2D4C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7E79A681FAFCB5F1A64229CF /* BirthdayGO.app */,
+				2E417A43F9CECB0E3AFA703C /* BirthdayGOTests.xctest */,
+				25964916A12959406D006244 /* BirthdayGOUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		9432E41697D464BFA6C6CE60 /* BirthdayGOTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6F6AD2AB1046F9802EA00560 /* Build configuration list for PBXNativeTarget "BirthdayGOTests" */;
+			buildPhases = (
+				3DF095589A499C2BB6ADC2F3 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				91BAACFD3558789C6B777B86 /* PBXTargetDependency */,
+			);
+			name = BirthdayGOTests;
+			packageProductDependencies = (
+			);
+			productName = BirthdayGOTests;
+			productReference = 2E417A43F9CECB0E3AFA703C /* BirthdayGOTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		E0E1D8EA83FBFD87EABF51EC /* BirthdayGO */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 79AA6FC1C8D915725CCC1DE8 /* Build configuration list for PBXNativeTarget "BirthdayGO" */;
+			buildPhases = (
+				AE161486E84E4EE26AB4B33B /* Sources */,
+				7C180052E782915ACC163BEB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = BirthdayGO;
+			packageProductDependencies = (
+			);
+			productName = BirthdayGO;
+			productReference = 7E79A681FAFCB5F1A64229CF /* BirthdayGO.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F8FDD3995A527558A4F83FCE /* BirthdayGOUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1CC0874ACF548BA14EA9ED6F /* Build configuration list for PBXNativeTarget "BirthdayGOUITests" */;
+			buildPhases = (
+				AC3519AE0952C142B024E894 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				6BC3DB2897C3ADEEF2E77C9E /* PBXTargetDependency */,
+			);
+			name = BirthdayGOUITests;
+			packageProductDependencies = (
+			);
+			productName = BirthdayGOUITests;
+			productReference = 25964916A12959406D006244 /* BirthdayGOUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8B333172DDE630A72AD1FF2C /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					9432E41697D464BFA6C6CE60 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					E0E1D8EA83FBFD87EABF51EC = {
+						ProvisioningStyle = Automatic;
+					};
+					F8FDD3995A527558A4F83FCE = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+						TestTargetID = E0E1D8EA83FBFD87EABF51EC;
+					};
+				};
+			};
+			buildConfigurationList = 09499954728DC936B8FEA41B /* Build configuration list for PBXProject "BirthdayGO" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 5ED3589A84314CDDE12DF5FA;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = B4E0350127BF674E23FA2D4C /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				E0E1D8EA83FBFD87EABF51EC /* BirthdayGO */,
+				9432E41697D464BFA6C6CE60 /* BirthdayGOTests */,
+				F8FDD3995A527558A4F83FCE /* BirthdayGOUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		7C180052E782915ACC163BEB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DCA8DC63FF1CC6581A36A6E3 /* Assets.xcassets in Resources */,
+				E91C1648D7D32E61A2A9C6BB /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3DF095589A499C2BB6ADC2F3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2FF8DD49A23C403E4380B00F /* ProximityTests.swift in Sources */,
+				A1E66CA7A10E4001B1DAE604 /* EggTests.swift in Sources */,
+				A1E66CA7A10E4001B1DAF703 /* MemoryMomentTests.swift in Sources */,
+				A1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AC3519AE0952C142B024E894 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3E15B38B60EC151E44270D89 /* BirthdayGOUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AE161486E84E4EE26AB4B33B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				642A7161BD29C84BA37F9AF4 /* APIClient.swift in Sources */,
+				52861455705594657038B4DE /* ARCatchView.swift in Sources */,
+				934802BBCD7A6BBBE31E0A53 /* BirthdayGOApp.swift in Sources */,
+				4C1A9E08B1D24F6A8E0C3311 /* BirthdayNotes.swift in Sources */,
+				97C0F574857DC3DFD46C7DC2 /* CatCatalog.swift in Sources */,
+				A1E66CA7A10E4001B1DAE601 /* EggCatalog.swift in Sources */,
+				A1E66CA7A10E4001B1DAE603 /* EggPlay.swift in Sources */,
+				A1E66CA7A10E4001B1DAE602 /* WalkTracker.swift in Sources */,
+				A1E66CA7A10E4001B1DAF701 /* MemoryMomentCatalog.swift in Sources */,
+				A1E66CA7A10E4001B1DAF702 /* MemoryMomentViews.swift in Sources */,
+				FD5B4E154BD65F082D8588B4 /* CatchGameView.swift in Sources */,
+				43DE9FC89964C72EDC77EFF2 /* CheckpointCatalog.swift in Sources */,
+				42BB0841A4C370ED4413131A /* CheckpointPlay.swift in Sources */,
+				5EF26B3DE94B608C9AD70DE9 /* ExploreView.swift in Sources */,
+				3920FD690B6075DD0492F184 /* GameStore.swift in Sources */,
+				3EA9E12786FB114C27447125 /* LibraryViews.swift in Sources */,
+				3A1543839145DA57E9A056B6 /* LocationService.swift in Sources */,
+				36CAE3406F5ECC8433E52BCF /* Models.swift in Sources */,
+				5A7E2C19D4F14B8A90C26630 /* OnboardingView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		6BC3DB2897C3ADEEF2E77C9E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E0E1D8EA83FBFD87EABF51EC /* BirthdayGO */;
+			targetProxy = 191AA627992D83A0D588C2BE /* PBXContainerItemProxy */;
+		};
+		91BAACFD3558789C6B777B86 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = E0E1D8EA83FBFD87EABF51EC /* BirthdayGO */;
+			targetProxy = 23AEB02ED14EFD83A0CAD516 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		379290258D6E26DD550A0652 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BG_API_BASE_URL = "https://ookqnalokcpqvdojmcmy.supabase.co/functions/v1/";
+				BG_SUPABASE_ANON_KEY = sb_publishable_DEnBR0L7_tN5veEl9nMGNA_5zsIZVI6;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		3B2FE67B0199A40365C017E8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.BirthdayGOTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BirthdayGO.app/BirthdayGO";
+			};
+			name = Release;
+		};
+		44F633BAD7931D7F435DDFF2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.BirthdayGOUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = BirthdayGO;
+			};
+			name = Release;
+		};
+		60386358C11F75BBD67FC796 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TUWBYL2SX9;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BirthdayGO/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.BirthdayGO;
+				SDKROOT = iphoneos;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		6403120836ECE15B37351F7C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = TUWBYL2SX9;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = BirthdayGO/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.BirthdayGO;
+				SDKROOT = iphoneos;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		A382D7F4D26646C701B0E1BE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.BirthdayGOUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = BirthdayGO;
+			};
+			name = Debug;
+		};
+		EE5DECB5C46375839D6C3361 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				BG_API_BASE_URL = "https://ookqnalokcpqvdojmcmy.supabase.co/functions/v1/";
+				BG_SUPABASE_ANON_KEY = sb_publishable_DEnBR0L7_tN5veEl9nMGNA_5zsIZVI6;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		F67D230EBF63797662BA4001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.BirthdayGOTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/BirthdayGO.app/BirthdayGO";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		09499954728DC936B8FEA41B /* Build configuration list for PBXProject "BirthdayGO" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EE5DECB5C46375839D6C3361 /* Debug */,
+				379290258D6E26DD550A0652 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		1CC0874ACF548BA14EA9ED6F /* Build configuration list for PBXNativeTarget "BirthdayGOUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A382D7F4D26646C701B0E1BE /* Debug */,
+				44F633BAD7931D7F435DDFF2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		6F6AD2AB1046F9802EA00560 /* Build configuration list for PBXNativeTarget "BirthdayGOTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F67D230EBF63797662BA4001 /* Debug */,
+				3B2FE67B0199A40365C017E8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		79AA6FC1C8D915725CCC1DE8 /* Build configuration list for PBXNativeTarget "BirthdayGO" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				60386358C11F75BBD67FC796 /* Debug */,
+				6403120836ECE15B37351F7C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 8B333172DDE630A72AD1FF2C /* Project object */;
+}
