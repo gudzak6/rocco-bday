@@ -264,8 +264,12 @@ private struct ARCatchScreen: View {
             .onAppear {
                 if code.isEmpty { code = fallbackCode ?? resolvedCharacter?.catalog?.fallbackCode ?? "" }
             }
-            .onPreferenceChange(BallAnchorKey.self) { ballAnchor = $0 }
-            .coordinateSpace(name: "playfield")
+            .overlayPreferenceValue(CatchAnchorKey.self) { anchors in
+                CatchAnchorResolver(anchors: anchors)
+            }
+            .onPreferenceChange(ResolvedCatchKey.self) { resolved in
+                ballAnchor = resolved.rest
+            }
         }
         .ignoresSafeArea()
     }

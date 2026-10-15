@@ -73,10 +73,8 @@ struct CatchGameView: View {
                                 }
                             }
                     }
-                    .background {
-                        GeometryReader { creature in
-                            Color.clear.preference(key: TargetFrameKey.self, value: creature.frame(in: .named("playfield")))
-                        }
+                    .anchorPreference(key: CatchAnchorKey.self, value: .bounds) { anchor in
+                        CatchAnchors(ball: nil, target: anchor)
                     }
                     .accessibilityLabel("\(item.title), capture target")
                     Spacer()
@@ -122,9 +120,13 @@ struct CatchGameView: View {
                 creatureBounce = true
                 if code.isEmpty { code = fallbackCode ?? resolvedCharacter?.catalog?.fallbackCode ?? "" }
             }
-            .onPreferenceChange(TargetFrameKey.self) { targetFrame = $0 }
-            .onPreferenceChange(BallAnchorKey.self) { ballAnchor = $0 }
-            .coordinateSpace(name: "playfield")
+            .overlayPreferenceValue(CatchAnchorKey.self) { anchors in
+                CatchAnchorResolver(anchors: anchors)
+            }
+            .onPreferenceChange(ResolvedCatchKey.self) { resolved in
+                ballAnchor = resolved.rest
+                targetFrame = resolved.target
+            }
         }
         .background(LinearGradient(colors: [.warmWhite, .skyBlue.opacity(0.25)], startPoint: .top, endPoint: .bottom).ignoresSafeArea())
     }
@@ -172,23 +174,54 @@ struct CatchGameView: View {
     }
 }
 
-struct BallAnchorKey: PreferenceKey {
-    static let defaultValue: CGPoint = .zero
-    static func reduce(value: inout CGPoint, nextValue: () -> CGPoint) { value = nextValue() }
+struct CatchAnchors {
+    var ball: Anchor<CGRect>?
+    var target: Anchor<CGRect>?
+}
+
+struct CatchAnchorKey: PreferenceKey {
+    static var defaultValue: CatchAnchors { CatchAnchors() }
+    static func reduce(value: inout CatchAnchors, nextValue: () -> CatchAnchors) {
+        let next = nextValue()
+        if next.ball != nil { value.ball = next.ball }
+        if next.target != nil { value.target = next.target }
+    }
+}
+
+struct ResolvedCatch: Equatable {
+    var rest: CGPoint = .zero
+    var target: CGRect = .zero
+}
+
+struct ResolvedCatchKey: PreferenceKey {
+    static var defaultValue: ResolvedCatch { ResolvedCatch() }
+    static func reduce(value: inout ResolvedCatch, nextValue: () -> ResolvedCatch) { value = nextValue() }
+}
+
+struct CatchAnchorResolver: View {
+    var anchors: CatchAnchors
+
+    var body: some View {
+        GeometryReader { proxy in
+            Color.clear.preference(
+                key: ResolvedCatchKey.self,
+                value: ResolvedCatch(
+                    rest: anchors.ball.map { CGPoint(x: proxy[$0].midX, y: proxy[$0].midY) } ?? .zero,
+                    target: anchors.target.map { proxy[$0] } ?? .zero
+                )
+            )
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
 }
 
 struct BallRestSlot: View {
     var body: some View {
         Color.clear
             .frame(width: 92, height: 92)
-            .background {
-                GeometryReader { slot in
-                    let frame = slot.frame(in: .named("playfield"))
-                    Color.clear.preference(
-                        key: BallAnchorKey.self,
-                        value: CGPoint(x: frame.midX, y: frame.midY)
-                    )
-                }
+            .anchorPreference(key: CatchAnchorKey.self, value: .bounds) { anchor in
+                CatchAnchors(ball: anchor, target: nil)
             }
             .accessibilityHidden(true)
             .allowsHitTesting(false)
@@ -567,11 +600,6 @@ private struct ImpactSparks: View {
         let angle = Double(index) / 7 * Double.pi * 2
         return CGSize(width: cos(angle) * 44, height: sin(angle) * 44)
     }
-}
-
-private struct TargetFrameKey: PreferenceKey {
-    static let defaultValue: CGRect = .zero
-    static func reduce(value: inout CGRect, nextValue: () -> CGRect) { value = nextValue() }
 }
 
 private struct CreaturePlaceholder: View {
