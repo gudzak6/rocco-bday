@@ -29,72 +29,77 @@ struct MemoryStopView: View {
     @State private var spinGlow = false
 
     var body: some View {
-        GeometryReader { screen in
-            let diameter = screen.size.width * 0.70
-            ZStack {
-                LinearGradient(colors: [.warmWhite, Color.skyBlue.opacity(0.28), .warmWhite], startPoint: .top, endPoint: .bottom)
-                    .ignoresSafeArea()
-                if showBurst && !reduceMotion {
-                    ConfettiBurst().ignoresSafeArea()
-                }
-                VStack(spacing: 18) {
-                    HStack {
-                        Spacer()
-                        Button {
-                            close()
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.headline.weight(.bold))
-                                .foregroundStyle(Color.birthdayPurple)
-                                .padding(10)
-                                .background(.white.opacity(0.9), in: Circle())
-                        }
-                        .accessibilityLabel("Close")
-                    }
-                    Text(checkpoint.title)
-                        .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.primary)
-                        .minimumScaleFactor(0.7)
-                    TimelineView(.animation(minimumInterval: reduceMotion ? 1 : 1.0 / 60.0, paused: coastStartedAt == nil || reduceMotion)) { timeline in
-                        disc(diameter: diameter, at: timeline.date)
-                    }
-                    Text(checkpoint.message.body)
-                        .font(.body)
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(.primary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text(instruction)
-                        .font(.subheadline.weight(.semibold))
-                        .multilineTextAlignment(.center)
-                        .foregroundStyle(Color.birthdayPurple)
-                    if confirmed {
-                        Text("Memory Collected")
-                            .font(.system(.title2, design: .rounded, weight: .bold))
-                            .foregroundStyle(Color.birthdayPurple)
-                        Text(rewardCopy)
-                            .font(.subheadline)
+        ZStack(alignment: .top) {
+            LinearGradient(colors: [.warmWhite, Color.skyBlue.opacity(0.28), .warmWhite], startPoint: .top, endPoint: .bottom)
+                .ignoresSafeArea()
+            if showBurst && !reduceMotion {
+                ConfettiBurst().ignoresSafeArea()
+            }
+            GeometryReader { screen in
+                let diameter = min(screen.size.width * 0.70, max(180, screen.size.height * 0.46))
+                ScrollView {
+                    VStack(spacing: 18) {
+                        Text(checkpoint.title)
+                            .font(.system(.largeTitle, design: .rounded, weight: .bold))
                             .multilineTextAlignment(.center)
-                            .foregroundStyle(.secondary)
-                        Button("Back to map") { close() }
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.large)
+                            .foregroundStyle(.primary)
+                            .minimumScaleFactor(0.7)
+                        TimelineView(.animation(minimumInterval: reduceMotion ? 1 : 1.0 / 60.0, paused: coastStartedAt == nil || reduceMotion)) { timeline in
+                            disc(diameter: diameter, at: timeline.date)
+                        }
+                        Text(checkpoint.message.body)
+                            .font(.body)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(.primary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Text(instruction)
+                            .font(.subheadline.weight(.semibold))
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(Color.birthdayPurple)
+                        if confirmed {
+                            Text("Memory Collected")
+                                .font(.system(.title2, design: .rounded, weight: .bold))
+                                .foregroundStyle(Color.birthdayPurple)
+                            Text(rewardCopy)
+                                .font(.subheadline)
+                                .multilineTextAlignment(.center)
+                                .foregroundStyle(.secondary)
+                            Button("Back to map") { close() }
+                                .buttonStyle(.borderedProminent)
+                                .controlSize(.large)
+                        }
                     }
-                    Spacer(minLength: 0)
-                }
-                .padding(.horizontal, 24)
-                .padding(.top, 12)
-                .overlay(alignment: .center) {
-                    if showXP {
-                        Text("+\(checkpoint.checkpointXP) XP")
-                            .font(.system(.title, design: .rounded, weight: .black))
-                            .foregroundStyle(Color.golden)
-                            .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
-                            .offset(y: showXP ? -diameter * 0.15 : 12)
-                            .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .padding(.horizontal, 24)
+                    .padding(.top, 64)
+                    .padding(.bottom, 24)
+                    .frame(maxWidth: .infinity)
+                    .overlay(alignment: .center) {
+                        if showXP {
+                            Text("+\(checkpoint.checkpointXP) XP")
+                                .font(.system(.title, design: .rounded, weight: .black))
+                                .foregroundStyle(Color.golden)
+                                .shadow(color: .black.opacity(0.15), radius: 4, y: 2)
+                                .offset(y: showXP ? -diameter * 0.15 : 12)
+                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
                     }
                 }
             }
+            HStack {
+                Spacer()
+                Button {
+                    close()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(Color.birthdayPurple)
+                        .padding(10)
+                        .background(.white.opacity(0.9), in: Circle())
+                }
+                .accessibilityLabel("Close")
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
         }
         .interactiveDismissDisabled()
         .onAppear {
@@ -130,6 +135,7 @@ struct MemoryStopView: View {
                     .padding(max(12, diameter * 0.05))
                 discImage
                     .frame(width: diameter * 0.78, height: diameter * 0.78)
+                    .clipped()
                     .clipShape(Circle())
             }
             .frame(width: diameter, height: diameter)

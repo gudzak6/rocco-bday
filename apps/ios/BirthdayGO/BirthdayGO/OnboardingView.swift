@@ -13,49 +13,49 @@ struct OnboardingPage: Identifiable, Hashable {
             id: 0,
             headline: "A Birthday Adventure Awaits!",
             subtitle: "Someone made an entire game just for you.",
-            body: "Your favorite people, places, and ridiculous memories have been turned into a real-world NYC adventure. Explore the city, discover surprises, and collect the memories that make you, you.",
+            body: "Ten birthday levels are waiting. Win them in order. Every clear unlocks photos on the Birthday Dex, and your friends’ notes stay in Messages.",
             buttonTitle: "Open Your Gift",
             symbol: "gift.fill"
         ),
         OnboardingPage(
             id: 1,
-            headline: "Explore Your City",
-            subtitle: "Your memories are hiding around NYC.",
-            body: "Open the map to find special locations across New York City. Visit the places marked on your map to discover characters, collectibles, and birthday surprises. You need to be physically nearby to activate certain encounters.",
+            headline: "Play the Quest",
+            subtitle: "One flag at a time.",
+            body: "Tap the lit flag, then tap Start. The game stays still through the 3-2-1 countdown. Clear the level and the next flag lights up. A short memory opens with the win, and you can reread it from the quest.",
             buttonTitle: "Next",
-            symbol: "map.fill"
+            symbol: "flag.fill"
         ),
         OnboardingPage(
             id: 2,
-            headline: "Catch Your Characters",
-            subtitle: "Some familiar faces are out there.",
-            body: "Find cartoon characters inspired by your friends, favorite foods, and inside jokes. Tap a nearby character, throw your capture ball, and add it to your FriendDex.",
+            headline: "Win the Mini-Games",
+            subtitle: "Run, catch, climb, and bake.",
+            body: "Each flag is a short game about you: a marathon, cookies, a climbing wall, a race to the door, a maze, gift deliveries, a train, a matching game, a bake-off, and a last castle. Lose a round and you can try that level again.",
             buttonTitle: "Next",
             symbol: "sparkles"
         ),
         OnboardingPage(
             id: 3,
-            headline: "Collect Passport Stamps",
-            subtitle: "Seven locations. Seven memories.",
-            body: "Visit Memory Stops and complete special encounters to earn stamps in your NYC Memory Passport. Collect all seven stamps to unlock your final birthday surprise.",
+            headline: "Unlock Photos",
+            subtitle: "A few new pictures every win.",
+            body: "Winning a level adds a random set of photos to the Birthday Dex. Open that tab to look through them. Under the photos, the app tells you how many are left to unlock.",
             buttonTitle: "Next",
-            symbol: "seal.fill"
+            symbol: "photo.on.rectangle.angled"
         ),
         OnboardingPage(
             id: 4,
             headline: "A Little Birthday Love",
             subtitle: "Messages from your people.",
-            body: "Your friends left you a few birthday notes. Visit the Memories tab to read messages from Sharon, Shelby, Mary, Joey, Derek, and Anya. They're available whenever you want.",
+            body: "Your friends left you a few birthday notes. Visit the Messages tab to read messages from Sharon, Mary, Sheba, Joey, Derek, and Anya. They're available whenever you want.",
             buttonTitle: "Next",
             symbol: "envelope.fill"
         ),
         OnboardingPage(
             id: 5,
-            headline: "Ready to Explore?",
-            subtitle: "Your birthday. Your city. Your adventure.",
-            body: "Enable location access to discover nearby surprises, follow your Memory Passport, and explore the city at your own pace. Remember to stay aware of your surroundings.",
+            headline: "Ready to Play?",
+            subtitle: "Your birthday. Your quest.",
+            body: "Start on the Quest tab. Win the levels in order, collect the photos on Birthday Dex, and open Messages whenever you want a note.",
             buttonTitle: "Start My Adventure",
-            symbol: "figure.walk"
+            symbol: "flag.fill"
         ),
     ]
 }
@@ -63,7 +63,6 @@ struct OnboardingPage: Identifiable, Hashable {
 struct OnboardingView: View {
     var isReplay = false
     @EnvironmentObject private var store: GameStore
-    @EnvironmentObject private var location: LocationService
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @AppStorage("onboardingPage") private var savedPage = 0
     @State private var page = 0
@@ -182,9 +181,6 @@ struct OnboardingView: View {
         if isReplay {
             store.showHowToPlay = false
             return
-        }
-        if location.authorizationStatus == .notDetermined {
-            location.requestAccess()
         }
         savedPage = 0
         store.acknowledgeWelcome()

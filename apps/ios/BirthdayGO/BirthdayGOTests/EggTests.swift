@@ -95,6 +95,8 @@ struct EggRewardPickerTests {
     @Test func catalogDistancesAreConfigurable() {
         #expect(EggCatalog.defaults.contains { $0.key == "one-mile" && abs($0.requiredMeters - 1_609.344) < 0.01 })
         #expect(EggCatalog.defaults.contains { $0.key == "ten-mile" && abs($0.requiredMeters - 16_093.44) < 0.01 })
+        #expect(EggCatalog.defaults.contains { $0.key == "marathon" && abs($0.requiredMeters - EggDistance.meters(fromMiles: 26.2)) < 0.01 })
+        #expect(EggCatalog.defaults.contains { $0.key == "hundred-mile" && abs($0.requiredMeters - EggDistance.meters(fromMiles: 100)) < 0.01 })
     }
 }
 

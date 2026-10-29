@@ -1,4 +1,3 @@
-@preconcurrency import CoreLocation
 import CoreMotion
 import Foundation
 
@@ -13,10 +12,10 @@ enum WalkTrackingStatus: String, Equatable, Sendable {
     var title: String {
         switch self {
         case .idle: "Not tracking"
-        case .requestingPermission: "Waiting for location access"
-        case .tracking: "Tracking a walk"
+        case .requestingPermission: "Waiting for motion access"
+        case .tracking: "Counting steps"
         case .paused: "Paused"
-        case .denied: "Location access is off"
+        case .denied: "Motion access is off"
         case .completed: "Walk complete"
         }
     }
@@ -25,192 +24,181 @@ enum WalkTrackingStatus: String, Equatable, Sendable {
 @MainActor
 final class WalkTracker: NSObject, ObservableObject {
     @Published private(set) var status: WalkTrackingStatus = .idle
-    @Published private(set) var authorizationStatus: CLAuthorizationStatus
     @Published private(set) var lastAcceptedMeters: Double = 0
-    @Published private(set) var activityLabel = "Waiting for movement"
+    @Published var activityLabel = "Steps count after you start incubating"
     @Published var pauseReason: String?
 
-    private let manager = CLLocationManager()
-    private let motion = CMMotionActivityManager()
-    private var lastSample: WalkSample?
-    private var currentActivity: WalkActivity?
-    private var isAppActive = true
+    private let pedometer = CMPedometer()
     private var shouldTrack = false
+    private var liveUpdatesRunning = false
     var onAcceptedDistance: ((Double) -> Void)?
 
-    override init() {
-        authorizationStatus = manager.authorizationStatus
-        super.init()
-        manager.delegate = self
-        manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.distanceFilter = 5
-        manager.activityType = .fitness
-        manager.pausesLocationUpdatesAutomatically = true
-        manager.allowsBackgroundLocationUpdates = false
-    }
+    private static let anchorKey = "eggPedometerAnchor"
+    private static let creditedKey = "eggPedometerCredited"
 
-    func requestAccess() {
-        status = .requestingPermission
-        manager.requestWhenInUseAuthorization()
-    }
-
-    func start() {
+    func start(resettingBaseline: Bool = false) {
         shouldTrack = true
-        let auth = manager.authorizationStatus
-        authorizationStatus = auth
-        guard auth == .authorizedWhenInUse || auth == .authorizedAlways else {
-            status = auth == .notDetermined ? .requestingPermission : .denied
-            if auth == .notDetermined { manager.requestWhenInUseAuthorization() }
+        guard CMPedometer.isStepCountingAvailable() else {
+            status = .denied
+            pauseReason = "This device can't count steps. A physical iPhone records them even while Birthday GO is closed."
             return
         }
-        guard isAppActive else {
-            status = .paused
-            pauseReason = "Walking only counts while Birthday GO is open."
+        if CMPedometer.authorizationStatus() == .denied || CMPedometer.authorizationStatus() == .restricted {
+            status = .denied
+            pauseReason = "Turn on Motion & Fitness for Birthday GO to count steps."
             return
         }
-        lastSample = nil
+        if resettingBaseline || anchorDate == nil {
+            anchorDate = Date()
+            creditedMeters = 0
+        }
         status = .tracking
         pauseReason = nil
-        manager.startUpdatingLocation()
-        startMotion()
+        activityLabel = "Steps keep counting while Birthday GO is closed."
+        catchUp()
+        startLiveUpdates()
     }
 
-    func pause(reason: String = "Tracking paused.") {
-        shouldTrack = shouldTrack && reason == "Walking only counts while Birthday GO is open."
-        if reason != "Walking only counts while Birthday GO is open." {
-            shouldTrack = false
-        }
-        manager.stopUpdatingLocation()
-        lastSample = nil
+    func pause(reason: String = "Walking paused. Resume to keep incubating.") {
+        shouldTrack = false
+        stopLiveUpdates()
+        flush()
         if status != .denied, status != .completed {
             status = .paused
         }
         pauseReason = reason
+        activityLabel = "Paused"
     }
 
-    func resumeIfNeeded() {
-        isAppActive = true
-        guard shouldTrack else { return }
+    func resumeAfterPause() {
+        anchorDate = Date()
+        creditedMeters = 0
         start()
     }
 
     func handleScene(active: Bool) {
-        isAppActive = active
+        guard shouldTrack else { return }
         if active {
-            resumeIfNeeded()
-        } else if shouldTrack {
-            pause(reason: "Walking only counts while Birthday GO is open.")
-            shouldTrack = true
+            status = .tracking
+            pauseReason = nil
+            catchUp()
+            startLiveUpdates()
+        } else {
+            stopLiveUpdates()
+            activityLabel = "Steps keep counting while Birthday GO is closed."
         }
     }
 
     func stop() {
         shouldTrack = false
-        manager.stopUpdatingLocation()
-        motion.stopActivityUpdates()
-        lastSample = nil
-        currentActivity = nil
+        stopLiveUpdates()
+        clearBaseline()
         if status != .denied {
             status = .idle
         }
         pauseReason = nil
+        activityLabel = "Steps count after you start incubating"
     }
 
     func markCompleted() {
         shouldTrack = false
-        manager.stopUpdatingLocation()
-        lastSample = nil
+        stopLiveUpdates()
+        clearBaseline()
         status = .completed
         pauseReason = nil
+        activityLabel = "This cookie is ready to hatch"
     }
 
-    #if DEBUG
-    func simulate(meters: Double) {
-        guard meters > 0 else { return }
-        lastAcceptedMeters = meters
-        onAcceptedDistance?(meters)
+    private func catchUp() {
+        guard shouldTrack, let anchor = anchorDate else { return }
+        let from = anchor
+        pedometer.queryPedometerData(from: from, to: Date()) { data, _ in
+            let reading = Self.reading(from: data)
+            Task { @MainActor in
+                self.receive(reading)
+            }
+        }
     }
-    #endif
 
-    private func startMotion() {
-        guard CMMotionActivityManager.isActivityAvailable() else {
-            activityLabel = "Walk filter is using GPS only"
-            currentActivity = nil
+    private func flush() {
+        guard let anchor = anchorDate else { return }
+        pedometer.queryPedometerData(from: anchor, to: Date()) { data, _ in
+            let reading = Self.reading(from: data)
+            Task { @MainActor in
+                self.receive(reading, force: true)
+            }
+        }
+    }
+
+    private func startLiveUpdates() {
+        guard shouldTrack, let anchor = anchorDate, !liveUpdatesRunning else { return }
+        liveUpdatesRunning = true
+        pedometer.startUpdates(from: anchor) { data, _ in
+            let reading = Self.reading(from: data)
+            Task { @MainActor in
+                self.receive(reading)
+            }
+        }
+    }
+
+    private func stopLiveUpdates() {
+        guard liveUpdatesRunning else { return }
+        pedometer.stopUpdates()
+        liveUpdatesRunning = false
+    }
+
+    private func receive(_ reading: PedometerReading?, force: Bool = false) {
+        guard force || shouldTrack, let reading else { return }
+        let delta = reading.meters - creditedMeters
+        guard delta >= 1 else {
+            activityLabel = stepLabel(reading.steps)
             return
         }
-        motion.startActivityUpdates(to: .main) { [weak self] activity in
-            guard let self, let activity else { return }
-            let classified = Self.classify(activity)
-            self.currentActivity = classified
-            self.activityLabel = Self.label(for: classified)
-        }
+        creditedMeters = reading.meters
+        lastAcceptedMeters = delta
+        activityLabel = stepLabel(reading.steps)
+        status = shouldTrack ? .tracking : status
+        onAcceptedDistance?(delta)
     }
 
-    private static func classify(_ activity: CMMotionActivity) -> WalkActivity {
-        if activity.automotive { return .automotive }
-        if activity.cycling { return .cycling }
-        if activity.stationary { return .stationary }
-        if activity.running { return .running }
-        if activity.walking { return .walking }
-        return .unknown
+    private func stepLabel(_ steps: Int) -> String {
+        if steps > 0 {
+            return "\(steps) steps since this incubation started"
+        }
+        return shouldTrack ? "Steps keep counting while Birthday GO is closed." : activityLabel
     }
 
-    private static func label(for activity: WalkActivity) -> String {
-        switch activity {
-        case .walking: "Walking"
-        case .running: "Running"
-        case .cycling: "Bike ride ignored"
-        case .automotive: "Vehicle movement ignored"
-        case .stationary: "Standing still"
-        case .unknown: "Uncertain — counting conservatively"
-        }
+    private struct PedometerReading {
+        var meters: Double
+        var steps: Int
     }
 
-    private func consider(_ location: CLLocation) {
-        guard shouldTrack, isAppActive, status == .tracking else { return }
-        guard location.timestamp.timeIntervalSinceNow > -20 else { return }
-        let sample = WalkSample(
-            latitude: location.coordinate.latitude,
-            longitude: location.coordinate.longitude,
-            timestamp: location.timestamp,
-            horizontalAccuracy: location.horizontalAccuracy,
-            reportedSpeed: location.speed
-        )
-        if let previous = lastSample,
-           let meters = WalkFilter.acceptedMeters(from: previous, to: sample, activity: currentActivity) {
-            lastAcceptedMeters = meters
-            onAcceptedDistance?(meters)
-        }
-        if sample.horizontalAccuracy > 0, sample.horizontalAccuracy <= WalkFilter.maxAccuracyMeters {
-            lastSample = sample
-        }
+    private static func reading(from data: CMPedometerData?) -> PedometerReading? {
+        guard let data else { return nil }
+        let steps = data.numberOfSteps.intValue
+        let meters = data.distance?.doubleValue ?? Double(steps) * 0.78
+        return PedometerReading(meters: meters, steps: steps)
     }
-}
 
-extension WalkTracker: CLLocationManagerDelegate {
-    nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
-        let status = manager.authorizationStatus
-        Task { @MainActor in
-            authorizationStatus = status
-            if status == .authorizedWhenInUse || status == .authorizedAlways {
-                if shouldTrack { start() }
-            } else if status == .denied || status == .restricted {
-                self.status = .denied
-                pauseReason = "Turn on Location for Birthday GO to incubate eggs."
+    private var anchorDate: Date? {
+        get { UserDefaults.standard.object(forKey: Self.anchorKey) as? Date }
+        set {
+            if let newValue {
+                UserDefaults.standard.set(newValue, forKey: Self.anchorKey)
+            } else {
+                UserDefaults.standard.removeObject(forKey: Self.anchorKey)
             }
         }
     }
 
-    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        guard let newest = locations.last else { return }
-        Task { @MainActor in consider(newest) }
+    private var creditedMeters: Double {
+        get { UserDefaults.standard.double(forKey: Self.creditedKey) }
+        set { UserDefaults.standard.set(newValue, forKey: Self.creditedKey) }
     }
 
-    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        Task { @MainActor in
-            if status == .tracking {
-                pauseReason = error.localizedDescription
-            }
-        }
+    private func clearBaseline() {
+        anchorDate = nil
+        creditedMeters = 0
+        UserDefaults.standard.removeObject(forKey: Self.creditedKey)
     }
 }

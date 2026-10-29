@@ -768,7 +768,7 @@ final class GameStore: ObservableObject {
     func startIncubating(eggId: UUID) {
         guard let context = modelContext, let egg = egg(id: eggId) else { return }
         if let active = activeIncubation(), active.id != egg.id {
-            errorMessage = "Only one egg can incubate at a time."
+            errorMessage = "Only one cookie can incubate at a time."
             return
         }
         egg.status = .incubating
@@ -777,7 +777,7 @@ final class GameStore: ObservableObject {
         egg.updatedAt = .now
         try? context.save()
         refreshEggs()
-        walkTracker?.start()
+        walkTracker?.start(resettingBaseline: true)
     }
 
     func pauseIncubation() {
@@ -792,7 +792,7 @@ final class GameStore: ObservableObject {
 
     func resumeIncubation() {
         guard playerEggs().contains(where: { $0.status == .incubating }) else { return }
-        walkTracker?.start()
+        walkTracker?.resumeAfterPause()
         refreshEggs()
     }
 
@@ -805,7 +805,7 @@ final class GameStore: ObservableObject {
             egg.metersWalked = egg.requiredMeters
             egg.status = .ready
             egg.readyAt = .now
-            eggReadyBanner = "Your Egg Is Ready!"
+            eggReadyBanner = "Your Cookie Is Ready!"
             walkTracker?.markCompleted()
         }
         try? context.save()
@@ -870,12 +870,6 @@ final class GameStore: ObservableObject {
         return presentation
     }
 
-    func simulateWalk(meters: Double) {
-        #if DEBUG
-        addWalkedMeters(max(0, meters))
-        #endif
-    }
-
     func grantEgg(typeId: UUID, isTest: Bool = false) {
         guard let type = EggCatalog.type(id: typeId) ?? EggCatalog.defaults.first(where: { $0.id == typeId }) else { return }
         insertEgg(from: type, isTest: isTest)
@@ -909,7 +903,29 @@ final class GameStore: ObservableObject {
                 insertEgg(from: type, isTest: false)
             }
         }
+        renameStoredEggsToCookies()
         restoreIncubationTracking()
+    }
+
+    private func renameStoredEggsToCookies() {
+        guard let context = modelContext else { return }
+        let rows = (try? context.fetch(FetchDescriptor<PlayerEggRecord>())) ?? []
+        var changed = false
+        for row in rows {
+            let updated = row.typeTitle
+                .replacingOccurrences(of: "Eggs", with: "Cookies")
+                .replacingOccurrences(of: "eggs", with: "cookies")
+                .replacingOccurrences(of: "Egg", with: "Cookie")
+                .replacingOccurrences(of: "egg", with: "cookie")
+            if updated != row.typeTitle {
+                row.typeTitle = updated
+                changed = true
+            }
+        }
+        if changed {
+            try? context.save()
+            refreshEggs()
+        }
     }
 
     private func insertEgg(from type: EggTypeConfig, isTest: Bool) {
