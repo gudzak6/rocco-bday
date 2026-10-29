@@ -29,8 +29,8 @@
   <string>Birthday GO uses your location while the app is open to unlock birthday surprises at meaningful places.</string>
   <key>NSCameraUsageDescription</key>
   <string>Birthday GO uses your camera to discover and catch characters in the real world.</string>
-  <key>NSMotionUsageDescription</key>
-  <string>Birthday GO uses motion activity while the app is open to count walking toward egg hatching and ignore subway or car travel.</string>
+    <key>NSMotionUsageDescription</key>
+    <string>Birthday GO counts your steps toward cookie hatching, including walks taken while the app is closed.</string>
   <key>BG_API_BASE_URL</key>
   <string>https://ookqnalokcpqvdojmcmy.supabase.co/functions/v1/</string>
   <key>BG_SUPABASE_ANON_KEY</key>

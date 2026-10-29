@@ -6,6 +6,7 @@ struct BirthdayFriendMessage: Identifiable, Hashable, Sendable {
     let id: UUID
     let senderName: String
     let body: String
+    var imageAsset: String? = nil
 
     var initial: String {
         String(senderName.prefix(1))
@@ -17,27 +18,32 @@ enum BirthdayMessages {
         BirthdayFriendMessage(
             id: UUID(uuidString: "B1DA1001-0000-4000-8000-000000000001")!,
             senderName: "Sharon",
-            body: "[REPLACE] Placeholder birthday message from Sharon. Swap this text later."
-        ),
-        BirthdayFriendMessage(
-            id: UUID(uuidString: "B1DA1001-0000-4000-8000-000000000002")!,
-            senderName: "Shelby",
-            body: "[REPLACE] Placeholder birthday message from Shelby. Swap this text later."
+            body: "HAPPY BIRTHDAY ROCCO!!",
+            imageAsset: "SharonMessage"
         ),
         BirthdayFriendMessage(
             id: UUID(uuidString: "B1DA1001-0000-4000-8000-000000000003")!,
             senderName: "Mary",
-            body: "[REPLACE] Placeholder birthday message from Mary. Swap this text later."
+            body: "Happy birthday Rocky!! The big 2-7!! Enjoy your final year of your mid-twenties 😮 Hope you’re having a blast playing this game and that it makes up for the heartbreak of chip city closing. xx Mary",
+            imageAsset: "MaryMessage"
+        ),
+        BirthdayFriendMessage(
+            id: UUID(uuidString: "B1DA1001-0000-4000-8000-000000000007")!,
+            senderName: "Sheba",
+            body: "Happiest of birthdays Rocco!!! Hope this year is the best one yet. Looking forward to more yap session with you in and out of the office. Have the best day ever!",
+            imageAsset: "ShebaMessage"
         ),
         BirthdayFriendMessage(
             id: UUID(uuidString: "B1DA1001-0000-4000-8000-000000000004")!,
             senderName: "Joey",
-            body: "[REPLACE] Placeholder birthday message from Joey. Swap this text later."
+            body: "Happy birthday, Rocco!! Hope you had an amazing birthday and are off to a great start to your 27th year! Wishing you a year filled with lots of adventures, great memories, and of course, plenty of cookies and sweet treats along the way. Hope this is your best year yet!",
+            imageAsset: "JoeyMessage"
         ),
         BirthdayFriendMessage(
             id: UUID(uuidString: "B1DA1001-0000-4000-8000-000000000005")!,
             senderName: "Derek",
-            body: "[REPLACE] Placeholder birthday message from Derek. Swap this text later."
+            body: "HAPPY BIRTHDAY!! Wishing you the happiest 27th to add to what’s already a huge year for ya! Excited for you to try out the game and manifesting a jets win for your bday 🤞🏻",
+            imageAsset: "DerekMessage"
         ),
         BirthdayFriendMessage(
             id: UUID(uuidString: "B1DA1001-0000-4000-8000-000000000006")!,

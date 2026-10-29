@@ -14,7 +14,9 @@ final class LocationService: NSObject, ObservableObject {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyBest
-        manager.distanceFilter = 5
+        manager.distanceFilter = 2
+        manager.activityType = .fitness
+        manager.pausesLocationUpdatesAutomatically = false
     }
 
     func requestAccess() {
@@ -24,8 +26,13 @@ final class LocationService: NSObject, ObservableObject {
     func start() {
         if DeveloperMode.isEnabled, location == nil {
             location = CLLocation(
-                latitude: CatCatalog.mockPlayerLocation.latitude,
-                longitude: CatCatalog.mockPlayerLocation.longitude
+                coordinate: CatCatalog.mockPlayerLocation,
+                altitude: 0,
+                horizontalAccuracy: 8,
+                verticalAccuracy: 8,
+                course: -1,
+                speed: 0,
+                timestamp: .now
             )
         }
         guard authorizationStatus == .authorizedWhenInUse || authorizationStatus == .authorizedAlways else { return }

@@ -126,7 +126,7 @@ struct InvitationView: View {
                     }
                     .font(.footnote)
                 }
-                Text("Location is requested only while you use the map. Birthday GO does not store a continuous GPS trail.")
+                Text("A birthday quest is waiting on the first tab.")
                     .font(.footnote).foregroundStyle(.secondary)
             }
             .padding(28)
@@ -149,14 +149,21 @@ struct InvitationView: View {
 
 struct MainTabView: View {
     @EnvironmentObject private var store: GameStore
-    @EnvironmentObject private var location: LocationService
+    @StateObject private var questProgress = QuestProgress()
+    @State private var tab = 0
 
     var body: some View {
-        TabView {
-            ExploreView().tabItem { Label("Explore", systemImage: "map.fill") }
-            CollectionView().tabItem { Label("Birthday Dex", systemImage: "square.grid.2x2.fill") }
-            MemoryBookView().tabItem { Label("Memories", systemImage: "book.closed.fill") }
-            ProfileView().tabItem { Label("Me", systemImage: "person.crop.circle.fill") }
+        TabView(selection: $tab) {
+            QuestMapView()
+                .environmentObject(questProgress)
+                .tag(0)
+                .tabItem { Label("Quest", systemImage: "flag.fill") }
+            BirthdayDexView()
+                .environmentObject(questProgress)
+                .tag(1)
+                .tabItem { Label("Birthday Dex", systemImage: "photo.on.rectangle.angled") }
+            MemoryBookView().tag(2).tabItem { Label("Messages", systemImage: "envelope.fill") }
+            ProfileView().tag(3).tabItem { Label("Me", systemImage: "person.crop.circle.fill") }
         }
         .overlay(alignment: .top) {
             VStack(spacing: 8) {
@@ -176,16 +183,13 @@ struct MainTabView: View {
                         }
                         .accessibilityAddTraits(.isStaticText)
                 }
-                EggReadyBanner()
             }
             .padding(.top)
         }
         .animation(.spring, value: store.noteUnlockBanner)
-        .animation(.spring, value: store.eggReadyBanner)
         .fullScreenCover(isPresented: $store.showHowToPlay) {
             OnboardingView(isReplay: true)
                 .environmentObject(store)
-                .environmentObject(location)
         }
     }
 }

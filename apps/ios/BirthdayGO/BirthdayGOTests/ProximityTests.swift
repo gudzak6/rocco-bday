@@ -175,26 +175,79 @@ struct CatchPhysicsTests {
     }
 }
 
+struct MapRevealTests {
+    @Test func photoDropsStayNearManhattanStops() {
+        let first = PhotoDropCatalog.makeDrops(filenames: ["IMG_0009.jpg"])[0]
+        let again = PhotoDropCatalog.makeDrops(filenames: ["IMG_0009.jpg"])[0]
+        let other = PhotoDropCatalog.makeDrops(filenames: ["IMG_0194.jpg"])[0]
+        #expect(first.id == again.id)
+        #expect(first.latitude == again.latitude)
+        #expect(first.longitude == again.longitude)
+        #expect(first.id != other.id)
+        for drop in [first, other] {
+            let nearest = PhotoDropCatalog.anchors.map {
+                Proximity.distanceMeters(
+                    latitude: drop.latitude, longitude: drop.longitude,
+                    targetLatitude: $0.latitude, targetLongitude: $0.longitude
+                )
+            }.min() ?? 0
+            #expect(nearest >= 119 && nearest <= 410)
+        }
+    }
+
+    @Test func revealRequiresThePlaceRadius() {
+        #expect(MapReveal.isWithinRange(distance: 70, accuracy: 10, radius: 75, maximumAccuracy: 250))
+        #expect(!MapReveal.isWithinRange(distance: 90, accuracy: 10, radius: 75, maximumAccuracy: 250))
+        #expect(!MapReveal.isWithinRange(distance: 20, accuracy: nil, radius: 75, maximumAccuracy: 250))
+        #expect(!MapReveal.isWithinRange(distance: 10, accuracy: 400, radius: 75, maximumAccuracy: 250))
+    }
+
+    @Test func hiddenPinsHaveTwentyTaunts() {
+        #expect(WalkCloserTaunts.all.count == 20)
+        #expect(Set(WalkCloserTaunts.all).count == 20)
+        #expect(WalkCloserTaunts.all.contains("Walk closer ya bum for more details"))
+        let first = WalkCloserTaunts.next(after: nil)
+        #expect(WalkCloserTaunts.all.contains(first))
+        #expect(WalkCloserTaunts.next(after: first) != first)
+    }
+
+    @Test func bundledPhotosLoadOnce() {
+        let drops = PhotoDropCatalog.drops()
+        #expect(drops.count == 40)
+        #expect(!drops.contains { $0.filename == "000094970013.jpg" })
+        #expect(!drops.contains { $0.filename == "000041920016.jpg" })
+        #expect(!drops.contains { $0.filename == "000041920006.jpg" })
+        #expect(!drops.contains { $0.filename == "000041920003.jpg" })
+        #expect(Set(drops.map(\.id)).count == drops.count)
+    }
+}
+
 struct OnboardingTests {
     @Test func hasSixHowToPlayScreens() {
         #expect(OnboardingPage.all.count == 6)
         #expect(OnboardingPage.all.map(\.headline) == [
             "A Birthday Adventure Awaits!",
-            "Explore Your City",
-            "Catch Your Characters",
-            "Collect Passport Stamps",
+            "Play the Quest",
+            "Win the Mini-Games",
+            "Unlock Photos",
             "A Little Birthday Love",
-            "Ready to Explore?",
+            "Ready to Play?",
         ])
         #expect(OnboardingPage.all.last?.buttonTitle == "Start My Adventure")
     }
 }
 
 struct BirthdayMessagesTests {
-    @Test func listsSixFriendsInOrder() {
-        #expect(BirthdayMessages.all.map(\.senderName) == ["Sharon", "Shelby", "Mary", "Joey", "Derek", "Anya"])
+    @Test func listsFriendsInOrder() {
+        #expect(BirthdayMessages.all.map(\.senderName) == ["Sharon", "Mary", "Sheba", "Joey", "Derek", "Anya"])
         #expect(Set(BirthdayMessages.all.map(\.id)).count == 6)
-        #expect(BirthdayMessages.all.allSatisfy { $0.body.contains("[REPLACE]") })
+        #expect(BirthdayMessages.all.first { $0.senderName == "Mary" }?.body.contains("chip city closing") == true)
+        #expect(BirthdayMessages.all.first { $0.senderName == "Sheba" }?.body.contains("yap session") == true)
+        #expect(BirthdayMessages.all.first { $0.senderName == "Sharon" }?.body == "HAPPY BIRTHDAY ROCCO!!")
+        #expect(BirthdayMessages.all.first { $0.senderName == "Derek" }?.body.contains("jets win") == true)
+        #expect(BirthdayMessages.all.first { $0.senderName == "Joey" }?.body.contains("cookies and sweet treats") == true)
+        let waiting = Set(BirthdayMessages.all.filter { $0.body.contains("[REPLACE]") }.map(\.senderName))
+        #expect(waiting == ["Anya"])
     }
 }
 

@@ -6,15 +6,15 @@ struct EggsInventorySection: View {
     var body: some View {
         let eggs = store.playerEggs()
         VStack(alignment: .leading, spacing: 12) {
-            Text("Eggs")
+            Text("Cookies")
                 .font(.system(.title2, design: .rounded, weight: .bold))
                 .padding(.horizontal)
-            Text("Incubate one egg at a time by walking with Birthday GO open.")
+            Text("Incubate one cookie at a time. Steps count after you start, even when Birthday GO is closed.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal)
             if eggs.isEmpty {
-                Text("No eggs yet. Your first 1-mile and 10-mile eggs will appear here.")
+                Text("No cookies yet. A 1-mile, 10-mile, 26.2-mile, and 100-mile cookie will appear here.")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
@@ -86,7 +86,7 @@ struct EggIncubatorView: View {
                 VStack(spacing: 22) {
                     EggIllustration(style: egg.artworkStyle, progress: egg.progress, ready: egg.status == .ready)
                         .frame(height: 280)
-                        .accessibilityLabel(egg.status == .ready ? "Egg ready to hatch" : "\(egg.typeTitle) illustration")
+                        .accessibilityLabel(egg.status == .ready ? "Cookie ready to hatch" : "\(egg.typeTitle) illustration")
 
                     Text(egg.typeTitle)
                         .font(.system(.largeTitle, design: .rounded, weight: .bold))
@@ -109,15 +109,10 @@ struct EggIncubatorView: View {
 
                     trackingCard(for: egg)
                     actions(for: egg)
-                    #if DEBUG
-                    if DeveloperMode.isEnabled || true {
-                        debugTools(for: egg)
-                    }
-                    #endif
                 }
                 .padding(.vertical, 24)
             } else {
-                Text("This egg is no longer in your inventory.")
+                Text("This cookie is no longer in your inventory.")
                     .foregroundStyle(.secondary)
                     .padding()
             }
@@ -135,11 +130,11 @@ struct EggIncubatorView: View {
 
     private func statusCopy(for egg: PlayerEggRecord) -> String {
         switch egg.status {
-        case .available: "Select this egg and start incubating to count walking distance."
-        case .incubating: walk.status == .tracking
-            ? "Keep walking with Birthday GO open."
-            : (walk.pauseReason ?? EggStatus.incubating.title)
-        case .ready: "Your egg is ready!"
+        case .available: "Select this cookie and start incubating to count your steps."
+        case .incubating: walk.status == .paused
+            ? (walk.pauseReason ?? "Walking is paused.")
+            : "Steps count even when Birthday GO is closed."
+        case .ready: "Your cookie is ready!"
         case .hatched: "Already hatched\(egg.rewardName.map { " into \($0)" } ?? "")."
         }
     }
@@ -147,18 +142,18 @@ struct EggIncubatorView: View {
     @ViewBuilder
     private func trackingCard(for egg: PlayerEggRecord) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Label(walk.status.title, systemImage: egg.status == .incubating ? "figure.walk" : "egg")
+            Label(walk.status.title, systemImage: egg.status == .incubating ? "figure.walk" : "birthday.cake.fill")
                 .font(.headline)
             Text(walk.activityLabel)
                 .font(.subheadline)
-            Text("Distance counts only while this app is open and you are actually walking. Subway, car, and GPS drift are ignored. Closed-app walking is not counted.")
+            Text("Steps are recorded by your iPhone after you start incubating, including while Birthday GO is closed. Open the app to see the cookie catch up. Car and subway rides are not steps, so they do not count.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
             if let reason = walk.pauseReason, egg.status == .incubating {
                 Text(reason).font(.footnote).foregroundStyle(Color.birthdayPurple)
             }
             if walk.status == .denied {
-                Text("Location is set to When In Use. Birthday GO needs it to measure walking.")
+                Text("Motion & Fitness is off. Birthday GO needs it to count steps toward this cookie.")
                     .font(.footnote)
             }
         }
@@ -178,7 +173,7 @@ struct EggIncubatorView: View {
                 .buttonStyle(.borderedProminent)
                 .disabled(store.activeIncubation() != nil)
                 if store.activeIncubation() != nil {
-                    Text("Only one egg can incubate at a time.")
+                    Text("Only one cookie can incubate at a time.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -193,32 +188,12 @@ struct EggIncubatorView: View {
                 }
             }
             if egg.status == .ready {
-                Button("Hatch your egg") { showHatch = true }
+                Button("Hatch your cookie") { showHatch = true }
                     .buttonStyle(.borderedProminent)
             }
         }
         .padding(.horizontal)
     }
-
-    #if DEBUG
-    @ViewBuilder
-    private func debugTools(for egg: PlayerEggRecord) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Developer simulation")
-                .font(.headline)
-            Text("Adds walking distance without leaving the room. Hidden from players in release builds.")
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            Button("Simulate 0.2 miles") { store.simulateWalk(meters: EggDistance.meters(fromMiles: 0.2)) }
-            Button("Simulate 1 mile") { store.simulateWalk(meters: EggDistance.meters(fromMiles: 1)) }
-            Button("Finish this egg") { store.simulateWalk(meters: egg.remainingMeters + 1) }
-        }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.golden.opacity(0.18), in: RoundedRectangle(cornerRadius: 16))
-        .padding(.horizontal)
-    }
-    #endif
 }
 
 struct EggHatchView: View {
@@ -238,7 +213,7 @@ struct EggHatchView: View {
                 if result == nil && !reduceMotion && !skipped && phase < 3 {
                     EggIllustration(style: egg.artworkStyle, progress: 1, ready: true, shaking: phase > 0, cracked: phase > 1)
                         .frame(height: 280)
-                    Text(phase == 0 ? "Something is stirring…" : phase == 1 ? "The shell is cracking!" : "Almost there!")
+                    Text(phase == 0 ? "Something is stirring…" : phase == 1 ? "The cookie is cracking!" : "Almost there!")
                         .font(.system(.title2, design: .rounded, weight: .bold))
                         .foregroundStyle(.white)
                     Button("Skip animation") { skipped = true; reveal() }
@@ -343,13 +318,13 @@ struct EggIllustration: View {
         TimelineView(.animation(minimumInterval: reduceMotion ? 1 : 0.08, paused: reduceMotion || !shaking)) { timeline in
             let wiggle = reduceMotion || !shaking ? 0.0 : sin(timeline.date.timeIntervalSinceReferenceDate * 14) * 8
             ZStack {
-                if style == "gold" && !compact {
+                if style == "gold" || style == "marathon" || style == "century", !compact {
                     Circle()
                         .fill(Color.golden.opacity(ready ? 0.45 : 0.22))
                         .blur(radius: 18)
                         .scaleEffect(ready ? 1.15 : 1)
                 }
-                eggShape
+                cookieShape
                     .rotationEffect(.degrees(wiggle))
                 if cracked {
                     crackMarks.rotationEffect(.degrees(wiggle))
@@ -359,37 +334,69 @@ struct EggIllustration: View {
         .accessibilityHidden(true)
     }
 
-    private var eggShape: some View {
-        ZStack {
-            Capsule()
+    private var cookieShape: some View {
+        let chip: CGFloat = compact ? 7 : 16
+        return ZStack {
+            Circle()
                 .fill(
                     LinearGradient(
-                        colors: style == "gold"
-                            ? [Color(red: 0.72, green: 0.48, blue: 0.95), Color.golden]
-                            : [Color(red: 0.72, green: 0.88, blue: 1), Color.skyBlue],
-                        startPoint: .top,
-                        endPoint: .bottom
+                        colors: shellColors,
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
                     )
                 )
                 .overlay(
-                    Capsule().stroke(.white.opacity(0.7), lineWidth: compact ? 2 : 4)
+                    Circle().stroke(.white.opacity(0.35), lineWidth: compact ? 2 : 4)
                 )
-                .shadow(color: (style == "gold" ? Color.birthdayPurple : Color.skyBlue).opacity(0.35), radius: ready ? 16 : 8, y: 6)
-            VStack(spacing: compact ? 6 : 12) {
-                ForEach(0..<3, id: \.self) { row in
-                    HStack(spacing: compact ? 8 : 14) {
-                        ForEach(0..<3, id: \.self) { column in
-                            Image(systemName: style == "gold" ? "star.fill" : (column + row).isMultiple(of: 2) ? "heart.fill" : "sparkle")
-                                .font(compact ? .caption2 : .body)
-                                .foregroundStyle(style == "gold" ? Color.white.opacity(0.9) : Color.birthdayPurple.opacity(0.55))
-                        }
-                    }
-                }
+                .shadow(color: shellShadow.opacity(0.35), radius: ready ? 16 : 8, y: 6)
+            ForEach(Array(chipOffsets.enumerated()), id: \.offset) { _, spot in
+                Circle()
+                    .fill(chipColor)
+                    .frame(width: chip, height: chip)
+                    .offset(x: spot.width, y: spot.height)
             }
-            .opacity(0.9)
         }
-        .aspectRatio(0.72, contentMode: .fit)
-        .scaleEffect(y: 1.08)
+        .aspectRatio(1, contentMode: .fit)
+    }
+
+    private var chipOffsets: [CGSize] {
+        let scale: CGFloat = compact ? 0.42 : 1
+        return [
+            CGSize(width: -28, height: -22),
+            CGSize(width: 18, height: -30),
+            CGSize(width: 30, height: 4),
+            CGSize(width: -6, height: 6),
+            CGSize(width: -30, height: 24),
+            CGSize(width: 12, height: 32),
+        ].map { CGSize(width: $0.width * scale, height: $0.height * scale) }
+    }
+
+    private var chipColor: Color {
+        switch style {
+        case "gold", "century": Color(red: 0.98, green: 0.86, blue: 0.45)
+        default: Color(red: 0.28, green: 0.16, blue: 0.08)
+        }
+    }
+
+    private var shellColors: [Color] {
+        switch style {
+        case "gold":
+            [Color(red: 0.93, green: 0.72, blue: 0.32), Color.golden]
+        case "marathon":
+            [Color(red: 0.78, green: 0.46, blue: 0.24), Color(red: 0.95, green: 0.62, blue: 0.32)]
+        case "century":
+            [Color(red: 0.32, green: 0.18, blue: 0.10), Color(red: 0.62, green: 0.38, blue: 0.16)]
+        default:
+            [Color(red: 0.95, green: 0.76, blue: 0.46), Color(red: 0.76, green: 0.48, blue: 0.22)]
+        }
+    }
+
+    private var shellShadow: Color {
+        switch style {
+        case "gold", "century": .birthdayPurple
+        case "marathon": Color(red: 0.95, green: 0.55, blue: 0.25)
+        default: .skyBlue
+        }
     }
 
     private var crackMarks: some View {

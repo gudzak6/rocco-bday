@@ -13,8 +13,15 @@
 		3A1543839145DA57E9A056B6 /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC6B538296273176B2A7FBCD /* LocationService.swift */; };
 		3E15B38B60EC151E44270D89 /* BirthdayGOUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84356F090A734A5425FEE554 /* BirthdayGOUITests.swift */; };
 		3EA9E12786FB114C27447125 /* LibraryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E00E33456C419FD124C2BCB4 /* LibraryViews.swift */; };
+		42BB0841A4C370ED4413131A /* CheckpointPlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C7DFB9511AD57382CCF6D5 /* CheckpointPlay.swift */; };
+		43DE9FC89964C72EDC77EFF2 /* CheckpointCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 573C29BE9A47116E21F2CBAA /* CheckpointCatalog.swift */; };
 		4C1A9E08B1D24F6A8E0C3311 /* BirthdayNotes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F2B7D41C0E34A9B91A15520 /* BirthdayNotes.swift */; };
+		52861455705594657038B4DE /* ARCatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C0A3C0EFBF59E631D205DE /* ARCatchView.swift */; };
 		5A7E2C19D4F14B8A90C26630 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B8F1A20C3E24C7D81D15540 /* OnboardingView.swift */; };
+		5EF26B3DE94B608C9AD70DE9 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06122F5A8F7ED51617B68187 /* ExploreView.swift */; };
+		642A7161BD29C84BA37F9AF4 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0D755897FEC3919FB0C5AE0 /* APIClient.swift */; };
+		934802BBCD7A6BBBE31E0A53 /* BirthdayGOApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87ACABFA7F6110EF1BC98937 /* BirthdayGOApp.swift */; };
+		97C0F574857DC3DFD46C7DC2 /* CatCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF85CCDC750E4A66D34F2A1 /* CatCatalog.swift */; };
 		A1E66CA7A10E4001B1DAE601 /* EggCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAE601 /* EggCatalog.swift */; };
 		A1E66CA7A10E4001B1DAE602 /* WalkTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAE602 /* WalkTracker.swift */; };
 		A1E66CA7A10E4001B1DAE603 /* EggPlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAE603 /* EggPlay.swift */; };
@@ -23,15 +30,16 @@
 		A1E66CA7A10E4001B1DAF702 /* MemoryMomentViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAF702 /* MemoryMomentViews.swift */; };
 		A1E66CA7A10E4001B1DAF703 /* MemoryMomentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAF703 /* MemoryMomentTests.swift */; };
 		A1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift */; };
-		42BB0841A4C370ED4413131A /* CheckpointPlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25C7DFB9511AD57382CCF6D5 /* CheckpointPlay.swift */; };
-		43DE9FC89964C72EDC77EFF2 /* CheckpointCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 573C29BE9A47116E21F2CBAA /* CheckpointCatalog.swift */; };
-		52861455705594657038B4DE /* ARCatchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8C0A3C0EFBF59E631D205DE /* ARCatchView.swift */; };
-		5EF26B3DE94B608C9AD70DE9 /* ExploreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06122F5A8F7ED51617B68187 /* ExploreView.swift */; };
-		642A7161BD29C84BA37F9AF4 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0D755897FEC3919FB0C5AE0 /* APIClient.swift */; };
-		934802BBCD7A6BBBE31E0A53 /* BirthdayGOApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87ACABFA7F6110EF1BC98937 /* BirthdayGOApp.swift */; };
-		97C0F574857DC3DFD46C7DC2 /* CatCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF85CCDC750E4A66D34F2A1 /* CatCatalog.swift */; };
 		DCA8DC63FF1CC6581A36A6E3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0D460DF451FB24297C37812A /* Assets.xcassets */; };
 		E91C1648D7D32E61A2A9C6BB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 72915B7CBD767B8367687CF9 /* PrivacyInfo.xcprivacy */; };
+		A1C0FFEE00000000000000D1 /* PhotoDrops in Resources */ = {isa = PBXBuildFile; fileRef = A1C0FFEE00000000000000D2 /* PhotoDrops */; };
+		A1C0FFEE00000000000000D3 /* MapReveal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0FFEE00000000000000D4 /* MapReveal.swift */; };
+		QST0000000000000000000A2 /* QuestModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000A1 /* QuestModels.swift */; };
+		QST0000000000000000000B2 /* QuestMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000B1 /* QuestMapView.swift */; };
+		QST0000000000000000000C2 /* MiniGameHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000C1 /* MiniGameHost.swift */; };
+		QST0000000000000000000D2 /* QuestArcadeScenes.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000D1 /* QuestArcadeScenes.swift */; };
+		QST0000000000000000000E2 /* QuestBoardGames.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000E1 /* QuestBoardGames.swift */; };
+		QST0000000000000000000F2 /* QuestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000F1 /* QuestTests.swift */; };
 		FD5B4E154BD65F082D8588B4 /* CatchGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29D7B8D51554B5961BDE155C /* CatchGameView.swift */; };
 /* End PBXBuildFile section */
 
@@ -62,10 +70,18 @@
 		3FF85CCDC750E4A66D34F2A1 /* CatCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatCatalog.swift; sourceTree = "<group>"; };
 		52D273B72C9B0BF3E9D02529 /* GameStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameStore.swift; sourceTree = "<group>"; };
 		573C29BE9A47116E21F2CBAA /* CheckpointCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointCatalog.swift; sourceTree = "<group>"; };
+		6B8F1A20C3E24C7D81D15540 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		72915B7CBD767B8367687CF9 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		7E79A681FAFCB5F1A64229CF /* BirthdayGO.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BirthdayGO.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		84356F090A734A5425FEE554 /* BirthdayGOUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayGOUITests.swift; sourceTree = "<group>"; };
+		87ACABFA7F6110EF1BC98937 /* BirthdayGOApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayGOApp.swift; sourceTree = "<group>"; };
 		8F2B7D41C0E34A9B91A15520 /* BirthdayNotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayNotes.swift; sourceTree = "<group>"; };
-		6B8F1A20C3E24C7D81D15540 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		97765AAEF0EAE6FE8F7310D1 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A4AA2435750609ADF48A2E26 /* ProximityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityTests.swift; sourceTree = "<group>"; };
+		ACD9C92738D47C8D3D5EEBFD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		B0D755897FEC3919FB0C5AE0 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		B8C0A3C0EFBF59E631D205DE /* ARCatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARCatchView.swift; sourceTree = "<group>"; };
+		BC6B538296273176B2A7FBCD /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		C1E66CA7A10E4001B1DAE601 /* EggCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EggCatalog.swift; sourceTree = "<group>"; };
 		C1E66CA7A10E4001B1DAE602 /* WalkTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalkTracker.swift; sourceTree = "<group>"; };
 		C1E66CA7A10E4001B1DAE603 /* EggPlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EggPlay.swift; sourceTree = "<group>"; };
@@ -74,15 +90,15 @@
 		C1E66CA7A10E4001B1DAF702 /* MemoryMomentViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMomentViews.swift; sourceTree = "<group>"; };
 		C1E66CA7A10E4001B1DAF703 /* MemoryMomentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMomentTests.swift; sourceTree = "<group>"; };
 		C1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelStopTests.swift; sourceTree = "<group>"; };
-		84356F090A734A5425FEE554 /* BirthdayGOUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayGOUITests.swift; sourceTree = "<group>"; };
-		87ACABFA7F6110EF1BC98937 /* BirthdayGOApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayGOApp.swift; sourceTree = "<group>"; };
-		97765AAEF0EAE6FE8F7310D1 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
-		A4AA2435750609ADF48A2E26 /* ProximityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityTests.swift; sourceTree = "<group>"; };
-		ACD9C92738D47C8D3D5EEBFD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
-		B0D755897FEC3919FB0C5AE0 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
-		B8C0A3C0EFBF59E631D205DE /* ARCatchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARCatchView.swift; sourceTree = "<group>"; };
-		BC6B538296273176B2A7FBCD /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		E00E33456C419FD124C2BCB4 /* LibraryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViews.swift; sourceTree = "<group>"; };
+		A1C0FFEE00000000000000D2 /* PhotoDrops */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PhotoDrops; sourceTree = "<group>"; };
+		A1C0FFEE00000000000000D4 /* MapReveal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapReveal.swift; sourceTree = "<group>"; };
+		QST0000000000000000000A1 /* QuestModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestModels.swift; sourceTree = "<group>"; };
+		QST0000000000000000000B1 /* QuestMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestMapView.swift; sourceTree = "<group>"; };
+		QST0000000000000000000C1 /* MiniGameHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniGameHost.swift; sourceTree = "<group>"; };
+		QST0000000000000000000D1 /* QuestArcadeScenes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestArcadeScenes.swift; sourceTree = "<group>"; };
+		QST0000000000000000000E1 /* QuestBoardGames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestBoardGames.swift; sourceTree = "<group>"; };
+		QST0000000000000000000F1 /* QuestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -127,6 +143,13 @@
 				C1E66CA7A10E4001B1DAF702 /* MemoryMomentViews.swift */,
 				BC6B538296273176B2A7FBCD /* LocationService.swift */,
 				97765AAEF0EAE6FE8F7310D1 /* Models.swift */,
+				A1C0FFEE00000000000000D4 /* MapReveal.swift */,
+				QST0000000000000000000A1 /* QuestModels.swift */,
+				QST0000000000000000000B1 /* QuestMapView.swift */,
+				QST0000000000000000000C1 /* MiniGameHost.swift */,
+				QST0000000000000000000D1 /* QuestArcadeScenes.swift */,
+				QST0000000000000000000E1 /* QuestBoardGames.swift */,
+				A1C0FFEE00000000000000D2 /* PhotoDrops */,
 				6B8F1A20C3E24C7D81D15540 /* OnboardingView.swift */,
 				72915B7CBD767B8367687CF9 /* PrivacyInfo.xcprivacy */,
 			);
@@ -140,6 +163,7 @@
 				C1E66CA7A10E4001B1DAE604 /* EggTests.swift */,
 				C1E66CA7A10E4001B1DAF703 /* MemoryMomentTests.swift */,
 				C1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift */,
+				QST0000000000000000000F1 /* QuestTests.swift */,
 			);
 			path = BirthdayGOTests;
 			sourceTree = "<group>";
@@ -262,6 +286,7 @@
 			files = (
 				DCA8DC63FF1CC6581A36A6E3 /* Assets.xcassets in Resources */,
 				E91C1648D7D32E61A2A9C6BB /* PrivacyInfo.xcprivacy in Resources */,
+				A1C0FFEE00000000000000D1 /* PhotoDrops in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,6 +301,7 @@
 				A1E66CA7A10E4001B1DAE604 /* EggTests.swift in Sources */,
 				A1E66CA7A10E4001B1DAF703 /* MemoryMomentTests.swift in Sources */,
 				A1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift in Sources */,
+				QST0000000000000000000F2 /* QuestTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -309,6 +335,12 @@
 				3EA9E12786FB114C27447125 /* LibraryViews.swift in Sources */,
 				3A1543839145DA57E9A056B6 /* LocationService.swift in Sources */,
 				36CAE3406F5ECC8433E52BCF /* Models.swift in Sources */,
+				A1C0FFEE00000000000000D3 /* MapReveal.swift in Sources */,
+				QST0000000000000000000A2 /* QuestModels.swift in Sources */,
+				QST0000000000000000000B2 /* QuestMapView.swift in Sources */,
+				QST0000000000000000000C2 /* MiniGameHost.swift in Sources */,
+				QST0000000000000000000D2 /* QuestArcadeScenes.swift in Sources */,
+				QST0000000000000000000E2 /* QuestBoardGames.swift in Sources */,
 				5A7E2C19D4F14B8A90C26630 /* OnboardingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

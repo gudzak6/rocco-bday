@@ -6,77 +6,122 @@ struct CollectionView: View {
     @EnvironmentObject private var store: GameStore
     @State private var rarity: CharacterRarity?
     @State private var category: String?
+    @State private var found = DiscoveredPlaces.ids()
+    @State private var selectedPhoto: PhotoDrop?
+    @State private var selectedMoment: MemoryMomentCatalog.Entry?
+    @State private var selectedPlace: CheckpointCatalog.Entry?
+    @State private var page = DexPage.friendDex
+    #if DEBUG
+    @AppStorage(HiddenPlacePreview.defaultsKey) private var showHiddenPlaces = false
+    #endif
     private let columns = [GridItem(.adaptive(minimum: 145), spacing: 14)]
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(alignment: .leading, spacing: 12) {
-                    EggsInventorySection()
-                    Text("FriendDex")
-                        .font(.system(.title2, design: .rounded, weight: .bold))
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                    if let total = store.snapshot?.characters.count, total > 0 {
-                        let caught = store.snapshot?.characters.filter(\.captured).count ?? 0
-                        Text("\(caught) of \(total) discovered")
+                    Picker("Collection", selection: $page) {
+                        Text("Cookies").tag(DexPage.eggs)
+                        Text("FriendDex").tag(DexPage.friendDex)
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal)
+
+                    if page == .eggs {
+                        EggsInventorySection()
+                    } else {
+                        Text("\(friendDexFound) of \(friendDexTotal) discovered")
                             .font(.system(.headline, design: .rounded, weight: .bold))
                             .padding(.horizontal)
-                    }
-                    LazyVGrid(columns: columns, spacing: 14) {
-                        ForEach(filtered) { character in
-                            NavigationLink { CharacterDetail(character: character) } label: {
-                                VStack(spacing: 10) {
-                                    CreatureCardArt(character: character)
-                                    Text(character.captured ? character.name : "Undiscovered")
-                                        .font(.system(.headline, design: .rounded, weight: .bold))
-                                    Text(character.rarity.rawValue.capitalized)
-                                        .font(.caption).foregroundStyle(.secondary)
-                                }
-                                .padding().background(.white, in: RoundedRectangle(cornerRadius: 20))
-                            }
-                            .buttonStyle(.plain)
+                        LazyVGrid(columns: columns, spacing: 14) {
+                            friendDexCards
                         }
-                    }.padding(.horizontal)
-                    TravelCollectionSection()
-                    if !store.souvenirs().isEmpty {
-                        Text("Souvenirs")
-                            .font(.system(.title2, design: .rounded, weight: .bold))
-                            .padding(.horizontal)
-                            .padding(.top, 8)
-                        ForEach(store.souvenirs(), id: \.souvenirId) { souvenir in
-                            HStack(spacing: 12) {
-                                Image(systemName: souvenir.symbol)
-                                    .font(.title)
-                                    .foregroundStyle(Color.golden)
-                                    .frame(width: 44, height: 44)
-                                VStack(alignment: .leading) {
-                                    Text(souvenir.name).font(.headline)
-                                    Text(souvenir.checkpointTitle).font(.caption).foregroundStyle(.secondary)
-                                    Text(souvenir.detail).font(.subheadline)
-                                }
-                            }
-                            .padding()
-                            .background(.white, in: RoundedRectangle(cornerRadius: 18))
-                            .padding(.horizontal)
-                        }
+                        .padding(.horizontal)
                     }
-                }.padding(.vertical)
+                }
+                .padding(.vertical)
             }
             .background(Color.warmWhite)
+            .onAppear { found = DiscoveredPlaces.ids() }
             .navigationTitle("Birthday Dex")
             .toolbar {
-                Menu {
-                    Button("All rarities") { rarity = nil }
-                    ForEach(CharacterRarity.allCases, id: \.self) { value in
-                        Button(value.rawValue.capitalized) { rarity = value }
-                    }
-                    Divider()
-                    Button("All categories") { category = nil }
-                    ForEach(["friend", "food", "memory", "inside_joke", "legendary"], id: \.self) { value in
-                        Button(value.replacingOccurrences(of: "_", with: " ").capitalized) { category = value }
-                    }
-                } label: { Label("Filter", systemImage: "line.3.horizontal.decrease.circle") }
+                if page == .friendDex {
+                    Menu {
+                        Button("All rarities") { rarity = nil }
+                        ForEach(CharacterRarity.allCases, id: \.self) { value in
+                            Button(value.rawValue.capitalized) { rarity = value }
+                        }
+                        Divider()
+                        Button("All categories") { category = nil }
+                        ForEach(["friend", "food", "memory", "inside_joke", "legendary"], id: \.self) { value in
+                            Button(value.replacingOccurrences(of: "_", with: " ").capitalized) { category = value }
+                        }
+                    } label: { Label("Filter", systemImage: "line.3.horizontal.decrease.circle") }
+                }
+            }
+            .sheet(item: $selectedPhoto) { drop in
+                PhotoDropViewer(drop: drop)
+            }
+            .fullScreenCover(item: $selectedMoment) { moment in
+                MemoryMomentViewer(moment: moment)
+            }
+            .sheet(item: $selectedPlace) { stop in
+                NavigationStack {
+                    PlaceDexDetail(stop: stop)
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var friendDexCards: some View {
+        ForEach(filtered) { character in
+            NavigationLink { CharacterDetail(character: character) } label: {
+                DexTile(
+                    title: character.captured ? character.name : "Undiscovered",
+                    subtitle: character.rarity.rawValue.capitalized
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(character.captured ? character.name : "Undiscovered")
+        }
+        if rarity == nil && category == nil {
+            ForEach(PhotoDropCatalog.drops()) { drop in
+                let revealed = isFound(drop.id)
+                Button {
+                    if revealed { selectedPhoto = drop }
+                } label: {
+                    DexTile(title: revealed ? "Photo" : "Undiscovered", subtitle: "Photo")
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(revealed ? "Photo" : "Undiscovered")
+            }
+            ForEach(MemoryMomentCatalog.entries) { moment in
+                let revealed = isFound(moment.id)
+                Button {
+                    if revealed { selectedMoment = moment }
+                } label: {
+                    DexTile(title: revealed ? moment.title : "Undiscovered", subtitle: "Memory")
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(revealed ? moment.title : "Undiscovered")
+            }
+            ForEach(CheckpointCatalog.entries) { stop in
+                let revealed = placeRevealed(stop)
+                Button {
+                    if revealed { selectedPlace = stop }
+                } label: {
+                    DexTile(title: revealed ? stop.title : "Undiscovered", subtitle: placeSubtitle(stop))
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(revealed ? stop.title : "Undiscovered")
+            }
+            ForEach(store.souvenirs(), id: \.souvenirId) { souvenir in
+                DexTile(title: souvenir.name, subtitle: "Souvenir")
+                    .accessibilityLabel(souvenir.name)
+            }
+            if store.hasNYCJetsetter() {
+                DexTile(title: TravelStops.achievementTitle, subtitle: "Achievement")
             }
         }
     }
@@ -86,79 +131,119 @@ struct CollectionView: View {
             (rarity == nil || $0.rarity == rarity) && (category == nil || $0.category == category)
         }
     }
+
+    private var placeCount: Int {
+        MemoryMomentCatalog.entries.count + CheckpointCatalog.entries.count
+    }
+
+    private var friendDexFound: Int {
+        let characters = store.snapshot?.characters.filter(\.captured).count ?? 0
+        let extras = store.souvenirs().count + (store.hasNYCJetsetter() ? 1 : 0)
+        return characters + foundPhotos + foundPlaces + extras
+    }
+
+    private var friendDexTotal: Int {
+        let characters = store.snapshot?.characters.count ?? 0
+        let extras = store.souvenirs().count + (store.hasNYCJetsetter() ? 1 : 0)
+        return characters + PhotoDropCatalog.drops().count + placeCount + extras
+    }
+
+    private var foundPhotos: Int {
+        PhotoDropCatalog.drops().filter { isFound($0.id) }.count
+    }
+
+    private var foundPlaces: Int {
+        MemoryMomentCatalog.entries.filter { isFound($0.id) }.count
+            + CheckpointCatalog.entries.filter { placeRevealed($0) }.count
+    }
+
+    private func isFound(_ id: UUID) -> Bool {
+        #if DEBUG
+        if showHiddenPlaces { return true }
+        #endif
+        return found.contains(id)
+    }
+
+    private func placeRevealed(_ stop: CheckpointCatalog.Entry) -> Bool {
+        if isFound(stop.id) { return true }
+        guard let souvenirId = stop.souvenir?.id else { return false }
+        return store.travelSouvenirs().contains { $0.souvenirId == souvenirId }
+            || store.souvenirs().contains { $0.souvenirId == souvenirId }
+    }
+
+    private func placeSubtitle(_ stop: CheckpointCatalog.Entry) -> String {
+        switch stop.kind {
+        case .memoryStop: "Memory Stop"
+        case .wildEncounter: "Wild encounter"
+        case .specialEncounter: "Special encounter"
+        case .travelStop: "Travel Stop"
+        }
+    }
 }
 
-private struct TravelCollectionSection: View {
-    @EnvironmentObject private var store: GameStore
+private enum DexPage: String {
+    case eggs
+    case friendDex
+}
+
+private struct DexTile: View {
+    let title: String
+    let subtitle: String
 
     var body: some View {
-        let collected = store.travelSouvenirs()
-        let collectedIds = Set(collected.map(\.souvenirId))
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Travel Collection")
-                .font(.system(.title2, design: .rounded, weight: .bold))
-                .padding(.horizontal)
-            Text("\(collectedIds.count) of \(TravelStops.airports.count) airports")
+        VStack(spacing: 10) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 24)
+                    .fill(Color.gray.opacity(0.15))
+                Image(systemName: "questionmark")
+                    .font(.largeTitle.weight(.bold))
+                    .foregroundStyle(.secondary)
+            }
+            .frame(height: 130)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            Text(title)
                 .font(.system(.headline, design: .rounded, weight: .bold))
-                .padding(.horizontal)
-            ForEach(TravelStops.airports, id: \.id) { airport in
-                let souvenir = airport.souvenir
-                let owned = souvenir.flatMap { item in collected.first { $0.souvenirId == item.id } }
-                HStack(spacing: 12) {
-                    Image(systemName: owned == nil ? "airplane" : (souvenir?.symbol ?? "checkmark.circle.fill"))
-                        .font(.title)
-                        .foregroundStyle(owned == nil ? Color.secondary : Color.skyBlue)
-                        .frame(width: 44, height: 44)
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(souvenir?.name ?? airport.title)
-                            .font(.headline)
-                            .foregroundStyle(owned == nil ? .secondary : .primary)
-                        Text("\(airport.airportCode ?? "") · \(airport.title)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                        if let owned {
-                            Text("Collected \(owned.collectedAt.formatted(date: .abbreviated, time: .omitted))")
-                                .font(.caption)
-                                .foregroundStyle(Color.mint)
-                        } else {
-                            Text("Not collected yet")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    Spacer()
-                    if owned != nil {
-                        Image(systemName: "checkmark.circle.fill").foregroundStyle(Color.mint)
-                    }
-                }
-                .padding()
-                .background(.white, in: RoundedRectangle(cornerRadius: 18))
-                .padding(.horizontal)
-                .accessibilityLabel("\(souvenir?.name ?? airport.title), \(owned == nil ? "uncollected" : "collected")")
-            }
-            if store.hasNYCJetsetter() {
-                HStack(spacing: 12) {
-                    Image(systemName: "medal.fill")
-                        .font(.title)
-                        .foregroundStyle(Color.golden)
-                    VStack(alignment: .leading) {
-                        Text(TravelStops.achievementTitle)
-                            .font(.system(.headline, design: .rounded, weight: .bold))
-                        Text("Checked in at JFK, LGA, and EWR.")
-                            .font(.subheadline)
-                        if let date = store.jetsetterAchievedAt() {
-                            Text(date.formatted(date: .abbreviated, time: .omitted))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                }
-                .padding()
-                .background(Color.golden.opacity(0.2), in: RoundedRectangle(cornerRadius: 18))
-                .padding(.horizontal)
-            }
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+            Text(subtitle)
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
-        .padding(.top, 8)
+        .padding()
+        .frame(maxWidth: .infinity)
+        .background(.white, in: RoundedRectangle(cornerRadius: 20))
+    }
+}
+
+private struct PlaceDexDetail: View {
+    let stop: CheckpointCatalog.Entry
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                if let name = MemoryStopArtwork.assetName(for: stop.title), UIImage(named: name) != nil {
+                    Image(name)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxHeight: 240)
+                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                } else {
+                    Image(systemName: stop.markerSymbol)
+                        .font(.system(size: 64))
+                        .foregroundStyle(Color.golden)
+                }
+                Text(stop.title)
+                    .font(.system(.largeTitle, design: .rounded, weight: .bold))
+                    .multilineTextAlignment(.center)
+                Text(stop.hint)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .padding()
+        }
+        .background(Color.warmWhite)
+        .navigationTitle("Place")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
@@ -294,6 +379,13 @@ private struct BirthdayMessageDetailView: View {
                 Text(message.senderName)
                     .font(.system(.title2, design: .rounded, weight: .semibold))
                     .foregroundStyle(Color.skyBlue)
+                if let imageAsset = message.imageAsset {
+                    Image(imageAsset)
+                        .resizable()
+                        .scaledToFit()
+                        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                        .accessibilityLabel("Photo from \(message.senderName)")
+                }
                 Text(message.body)
                     .font(.system(.body, design: .rounded))
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -443,116 +535,66 @@ struct BirthdayLetterView: View {
 
 struct ProfileView: View {
     @EnvironmentObject private var store: GameStore
-    private let colors = ["purple", "sky", "gold", "mint"]
-    #if DEBUG
-    @AppStorage(MemoryStopProximityOverride.defaultsKey) private var memoryStopOverride = MemoryStopProximityOverride.off.rawValue
-    #endif
 
     var body: some View {
         NavigationStack {
             List {
-                if let snapshot = store.snapshot {
+                if store.snapshot != nil {
                     Section {
-                        Text("Happy Birthday, \(snapshot.game.recipientName)!")
-                            .font(.system(.title2, design: .rounded, weight: .bold))
-                        LabeledContent("XP", value: "\(snapshot.game.xp)")
-                        LabeledContent("Level", value: "\(Progression.level(xp: snapshot.game.xp))")
-                        LabeledContent("Characters", value: "\(snapshot.characters.filter(\.captured).count) / \(snapshot.characters.count)")
-                        LabeledContent("Notes", value: "\(snapshot.unlockedMessages.count) / \(max(snapshot.messagePins.count, snapshot.unlockedMessages.count))")
-                    }
-                    Section("NYC Memory Passport") {
-                        ForEach(MemoryPassport.stamps, id: \.key) { stamp in
-                            Label(stamp.title, systemImage: store.passportStampKeys().contains(stamp.key) ? stamp.symbol : "lock.fill")
-                                .foregroundStyle(store.passportStampKeys().contains(stamp.key) ? Color.golden : .secondary)
-                        }
-                    }
-                    Section("Map avatar") {
-                        HStack {
-                            ForEach(colors, id: \.self) { token in
-                                Button {
-                                    store.setAvatar(color: token)
-                                } label: {
-                                    AvatarMarker(initial: String(snapshot.game.recipientName.prefix(1)), color: token)
-                                        .overlay {
-                                            if store.avatarColor == token {
-                                                Circle().stroke(Color.birthdayPurple, lineWidth: 3)
-                                            }
-                                        }
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityLabel("\(token) avatar")
+                        VStack(alignment: .leading, spacing: 16) {
+                            Image("ProfileCard")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(maxWidth: 280)
+                                .frame(maxWidth: .infinity)
+                                .accessibilityLabel("Chip City Trainer")
+                            Text("Happy Birthday Rocco")
+                                .font(.system(.title2, design: .rounded, weight: .bold))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                            Text("The Ultimate Air Rounder - Level 27")
+                                .font(.system(.headline, design: .rounded, weight: .semibold))
+                                .foregroundStyle(.secondary)
+                            LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
+                                ProfileStat(symbol: "🏃", title: "Running", value: "96")
+                                ProfileStat(symbol: "🍪", title: "Cookie Consumption", value: "99")
+                                ProfileStat(symbol: "🧗", title: "Rock Climbing", value: "94")
+                                ProfileStat(symbol: "❤️", title: "Boyfriend Rating", value: "100")
+                                ProfileStat(symbol: "🤝", title: "Friend Loyalty", value: "100")
+                                ProfileStat(symbol: "🎮", title: "Gaming", value: "98")
                             }
                         }
-                    }
-                    if snapshot.finale.unlocked {
-                        Section("Final surprise") { FinaleView(finale: snapshot.finale) }
-                    } else {
-                        Section("Final surprise") {
-                            Label(
-                                Progression.isComplete(characters: snapshot.characters, messages: snapshot.messagePins, landmarks: snapshot.landmarks)
-                                ? "Refreshing your finale…"
-                                : "Complete required adventures to unlock",
-                                systemImage: "lock.fill"
-                            )
-                        }
+                        .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 16, trailing: 16))
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.warmWhite)
                     }
                     Section {
                         Button("How to Play") { store.showHowToPlay = true }
-                        Button("Refresh adventure") { Task { await store.synchronize() } }
                     }
-                    #if DEBUG
-                    Section("Developer") {
-                        Toggle("Developer encounters (no GPS)", isOn: Binding(
-                            get: { UserDefaults.standard.bool(forKey: DeveloperMode.defaultsKey) },
-                            set: { UserDefaults.standard.set($0, forKey: DeveloperMode.defaultsKey) }
-                        ))
-                        Text("Places Chair Cat and Rug Cat on the map around mock coordinates so both can be caught in Simulator.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                        Picker("Memory Stop distance preview", selection: $memoryStopOverride) {
-                            Text("Off").tag(MemoryStopProximityOverride.off.rawValue)
-                            Text("Distant").tag(MemoryStopProximityOverride.distant.rawValue)
-                            Text("Nearby").tag(MemoryStopProximityOverride.nearby.rawValue)
-                            Text("In range").tag(MemoryStopProximityOverride.inRange.rawValue)
-                        }
-                        Text("Changes how Memory Stops look. It does not collect them or change saved XP.")
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
-                        Button("Grant another 1-mile test egg") { store.grantEgg(typeId: EggCatalog.oneMileId, isTest: true) }
-                        Button("Grant another 10-mile test egg") { store.grantEgg(typeId: EggCatalog.tenMileId, isTest: true) }
-                        Button("Reset test egg progress") { store.resetTestEggs() }
-                    }
-                    #endif
                 }
             }.navigationTitle("Your Adventure")
         }
     }
 }
 
-private struct FinaleView: View {
-    let finale: Finale
-    @State private var celebrate = false
+private struct ProfileStat: View {
+    let symbol: String
+    let title: String
+    let value: String
+
     var body: some View {
-        ZStack {
-            if celebrate { ConfettiBurst().frame(height: 180) }
-            VStack(spacing: 14) {
-                Image(systemName: "party.popper.fill").font(.system(size: 54))
-                    .foregroundStyle(Color.golden).scaleEffect(celebrate ? 1.15 : 0.85)
-                Text(finale.title ?? "Your final surprise")
-                    .font(.system(.title2, design: .rounded, weight: .bold))
-                if let letter = finale.letter { Text(letter) }
-                if let destination = finale.destination {
-                    Label(destination, systemImage: "mappin.and.ellipse")
-                }
-                if let path = finale.mediaPath, let url = URL(string: path) {
-                    AsyncImage(url: url) { image in image.resizable().scaledToFit() } placeholder: { EmptyView() }
-                        .frame(maxHeight: 180)
-                        .clipShape(RoundedRectangle(cornerRadius: 16))
-                }
-                Text("You can replay this surprise anytime.").font(.caption).foregroundStyle(.secondary)
-            }
-            .padding(.vertical)
+        VStack(spacing: 8) {
+            Text("\(symbol) \(title)")
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+            Text(value)
+                .font(.system(size: 28, weight: .bold, design: .rounded))
         }
-        .onAppear { withAnimation(.spring(duration: 0.8)) { celebrate = true } }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 8)
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 16))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.black.opacity(0.08), lineWidth: 1))
     }
 }

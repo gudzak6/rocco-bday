@@ -257,6 +257,8 @@ final class PlayerEggRecord {
 enum EggCatalog {
     static let oneMileId = UUID(uuidString: "B1DAE600-0000-4000-8000-000000000001")!
     static let tenMileId = UUID(uuidString: "B1DAE600-0000-4000-8000-000000000002")!
+    static let marathonId = UUID(uuidString: "B1DAE600-0000-4000-8000-000000000003")!
+    static let hundredMileId = UUID(uuidString: "B1DAE600-0000-4000-8000-000000000004")!
     private static let remoteTypesKey = "eggTypesCache"
 
     static var defaults: [EggTypeConfig] {
@@ -264,7 +266,7 @@ enum EggCatalog {
             EggTypeConfig(
                 id: oneMileId,
                 key: "one-mile",
-                title: "1-Mile Egg",
+                title: "1-Mile Cookie",
                 requiredMeters: EggDistance.meters(fromMiles: 1),
                 xpValue: 50,
                 artworkStyle: "sky",
@@ -279,7 +281,7 @@ enum EggCatalog {
             EggTypeConfig(
                 id: tenMileId,
                 key: "ten-mile",
-                title: "10-Mile Egg",
+                title: "10-Mile Cookie",
                 requiredMeters: EggDistance.meters(fromMiles: 10),
                 xpValue: 200,
                 artworkStyle: "gold",
@@ -289,6 +291,36 @@ enum EggCatalog {
                 rewardWeights: nil,
                 excludeDuplicates: true,
                 duplicateXp: 40,
+                artworkPath: nil
+            ),
+            EggTypeConfig(
+                id: marathonId,
+                key: "marathon",
+                title: "26.2-Mile Cookie",
+                requiredMeters: EggDistance.meters(fromMiles: 26.2),
+                xpValue: 500,
+                artworkStyle: "marathon",
+                rarityLabel: "Legendary",
+                allowedRarities: [.legendary],
+                rewardCharacterIds: [],
+                rewardWeights: nil,
+                excludeDuplicates: true,
+                duplicateXp: 100,
+                artworkPath: nil
+            ),
+            EggTypeConfig(
+                id: hundredMileId,
+                key: "hundred-mile",
+                title: "100-Mile Cookie",
+                requiredMeters: EggDistance.meters(fromMiles: 100),
+                xpValue: 1_000,
+                artworkStyle: "century",
+                rarityLabel: "Legendary",
+                allowedRarities: [.legendary],
+                rewardCharacterIds: [],
+                rewardWeights: nil,
+                excludeDuplicates: true,
+                duplicateXp: 200,
                 artworkPath: nil
             ),
         ]
