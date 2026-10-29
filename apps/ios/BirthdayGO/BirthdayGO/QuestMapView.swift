@@ -4,14 +4,18 @@ struct QuestMapView: View {
     @EnvironmentObject private var progress: QuestProgress
     @State private var playing: QuestLevel?
     @State private var showBook = false
+    @State private var focusedLevel: Int?
+    private let stride: CGFloat = 230
 
     var body: some View {
         NavigationStack {
             GeometryReader { geo in
+                let inset = max(0, geo.size.width / 2 - stride / 2)
                 ScrollView(.horizontal, showsIndicators: false) {
-                    map(in: geo.size)
-                        .frame(width: 2480, height: geo.size.height)
+                    map(in: geo.size, inset: inset)
+                        .frame(width: mapWidth(viewport: geo.size.width), height: geo.size.height)
                 }
+                .scrollPosition(id: $focusedLevel, anchor: .center)
             }
             .background(mapSky)
             .navigationTitle("Rocco's Quest")
@@ -32,11 +36,25 @@ struct QuestMapView: View {
                     .background(.ultraThinMaterial)
             }
         }
+        .onAppear {
+            if focusedLevel == nil {
+                focusedLevel = QuestRules.currentLevel(completed: progress.completed)
+            }
+        }
         .fullScreenCover(item: $playing) { level in
             QuestPlayView(level: level) {
                 progress.complete(level.number)
             } onClose: {
+                let finished = level.number
+                let won = progress.completed.contains(finished)
                 playing = nil
+                guard won else { return }
+                let next = min(finished + 1, QuestCatalog.levels.count)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                    withAnimation(.easeInOut(duration: 0.9)) {
+                        focusedLevel = next
+                    }
+                }
             }
         }
         .sheet(isPresented: $showBook) {
@@ -47,19 +65,31 @@ struct QuestMapView: View {
     private var footer: String {
         let done = progress.completed.count
         if done == 0 { return "Level 1 is open. Clear it to light the next flag." }
-        if done >= 10 { return "Every flag is lit. The book is full." }
-        return "\(done) of 10 flags lit. Level \(QuestRules.currentLevel(completed: progress.completed)) is next."
+        let total = QuestCatalog.levels.count
+        if done >= total { return "Every flag is lit. The book is full." }
+        return "\(done) of \(total) flags lit. Level \(QuestRules.currentLevel(completed: progress.completed)) is next."
     }
 
-    private func map(in size: CGSize) -> some View {
-        let spots = (1...10).map { point($0, height: size.height) }
+    private func mapWidth(viewport: CGFloat) -> CGFloat {
+        viewport + CGFloat(QuestCatalog.levels.count - 1) * stride
+    }
+
+    private func map(in size: CGSize, inset: CGFloat) -> some View {
+        let spots = QuestCatalog.levels.map { point($0.number, height: size.height, viewport: size.width) }
         return ZStack(alignment: .topLeading) {
             hills(height: size.height)
             path(spots)
-            ForEach(QuestCatalog.levels) { level in
-                node(level)
-                    .position(spots[level.number - 1])
+            HStack(spacing: 0) {
+                ForEach(QuestCatalog.levels) { level in
+                    let spot = point(level.number, height: size.height, viewport: size.width)
+                    node(level)
+                        .offset(y: spot.y - size.height / 2)
+                        .frame(width: stride, height: size.height)
+                        .id(level.number)
+                }
             }
+            .padding(.leading, inset)
+            .scrollTargetLayout()
         }
     }
 
@@ -106,8 +136,8 @@ struct QuestMapView: View {
         .allowsHitTesting(false)
     }
 
-    private func point(_ number: Int, height: CGFloat) -> CGPoint {
-        let x = 150 + CGFloat(number - 1) * 230
+    private func point(_ number: Int, height: CGFloat, viewport: CGFloat) -> CGPoint {
+        let x = viewport / 2 + CGFloat(number - 1) * stride
         let wave = sin(CGFloat(number) * 0.9) * min(110, height * 0.16)
         return CGPoint(x: x, y: height * 0.46 + wave)
     }
@@ -190,28 +220,38 @@ struct RoccoSprite: View {
 
 struct LevelCompleteView: View {
     let level: QuestLevel
+    var unlockedFilenames: [String] = []
     var onContinue: () -> Void
     @State private var opened = false
     @State private var revealed = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var unlockLabel: String {
+        unlockedFilenames.count == 1 ? "1 photo unlocked" : "\(unlockedFilenames.count) photos unlocked"
+    }
 
     var body: some View {
         ZStack {
             LinearGradient(colors: [level.accent.opacity(0.45), Color.warmWhite], startPoint: .top, endPoint: .bottom)
                 .ignoresSafeArea()
             if !reduceMotion { ConfettiBurst().ignoresSafeArea() }
-            VStack(spacing: 18) {
-                Text("Level \(level.number) clear")
-                    .font(.system(.largeTitle, design: .rounded, weight: .black))
-                chest
-                if revealed {
-                    memory
-                    Button("Keep going", action: onContinue)
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
+            ScrollView {
+                VStack(spacing: 18) {
+                    Text("Level \(level.number) clear")
+                        .font(.system(.largeTitle, design: .rounded, weight: .black))
+                    chest
+                    if revealed {
+                        if !unlockedFilenames.isEmpty {
+                            photoNotice
+                        }
+                        memory
+                        Button("Keep going", action: onContinue)
+                            .buttonStyle(.borderedProminent)
+                            .controlSize(.large)
+                    }
                 }
+                .padding(24)
             }
-            .padding(24)
         }
         .onAppear {
             if reduceMotion {
@@ -242,6 +282,36 @@ struct LevelCompleteView: View {
         }
         .frame(height: 130)
         .accessibilityLabel(opened ? "Treasure chest open" : "Treasure chest")
+    }
+
+    private var photoNotice: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label(unlockLabel, systemImage: "photo.on.rectangle.angled")
+                .font(.system(.headline, design: .rounded, weight: .black))
+            Text("Swipe through them here. They stay on the Birthday Dex.")
+                .font(.system(.subheadline, design: .rounded))
+                .foregroundStyle(.secondary)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(unlockedFilenames, id: \.self) { name in
+                        if let image = PhotoDropImage.preview(filename: name) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 150, height: 190)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                                .overlay(RoundedRectangle(cornerRadius: 16).stroke(.black, lineWidth: 3))
+                                .accessibilityLabel("Unlocked photo")
+                        }
+                    }
+                }
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.white, in: RoundedRectangle(cornerRadius: 20))
+        .overlay(RoundedRectangle(cornerRadius: 20).stroke(.black, lineWidth: 3))
+        .accessibilityElement(children: .combine)
     }
 
     private var memory: some View {

@@ -1,77 +1,132 @@
 import SwiftUI
 
-struct ClimbingGame: View {
+struct BoyfriendMemoryGame: View {
     @ObservedObject var session: QuestSession
-    @State private var current = 0
-    @State private var mistakes = 0
-
-    private let holds: [(id: Int, x: CGFloat, y: CGFloat, unstable: Bool)] = [
-        (0, 0.50, 0.08, false),
-        (1, 0.30, 0.20, false),
-        (2, 0.72, 0.22, true),
-        (3, 0.48, 0.33, false),
-        (4, 0.24, 0.44, false),
-        (5, 0.66, 0.46, true),
-        (6, 0.42, 0.58, false),
-        (7, 0.70, 0.68, false),
-        (8, 0.34, 0.76, false),
-        (9, 0.55, 0.88, false),
+    private let prompts: [(symbol: String, title: String)] = [
+        ("birthday.cake.fill", "Cookie"),
+        ("camera.macro", "Flowers"),
+        ("envelope.fill", "Note"),
+        ("music.note", "Song"),
     ]
+    @State private var sequence: [Int] = []
+    @State private var step = 0
+    @State private var showing = false
+    @State private var flash: Int?
+    @State private var misses = 0
+    @State private var started = false
+    @State private var showToken = 0
 
     var body: some View {
-        GeometryReader { geo in
-            ZStack {
-                LinearGradient(colors: [Color.mint.opacity(0.35), Color.warmWhite], startPoint: .top, endPoint: .bottom)
-                RoundedRectangle(cornerRadius: 28)
-                    .fill(Color(red: 0.55, green: 0.62, blue: 0.7))
-                    .padding(.horizontal, 36)
-                    .padding(.vertical, 24)
-                    .overlay(RoundedRectangle(cornerRadius: 28).stroke(.black, lineWidth: 4).padding(.horizontal, 36).padding(.vertical, 24))
-                ForEach(holds, id: \.id) { hold in
-                    holdView(hold, in: geo.size)
-                        .position(x: 36 + hold.x * (geo.size.width - 72), y: geo.size.height - 40 - hold.y * (geo.size.height - 80))
+        VStack(spacing: 18) {
+            Text(prompt)
+                .font(.system(.title3, design: .rounded, weight: .black))
+                .multilineTextAlignment(.center)
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
+                ForEach(prompts.indices, id: \.self) { index in
+                    Button { tap(index) } label: {
+                        VStack(spacing: 8) {
+                            Image(systemName: prompts[index].symbol)
+                                .font(.system(size: 32, weight: .bold))
+                            Text(prompts[index].title)
+                                .font(.system(.headline, design: .rounded, weight: .black))
+                        }
+                        .frame(maxWidth: .infinity, minHeight: 120)
+                        .foregroundStyle(flash == index ? Color.white : Color.black)
+                        .background(flash == index ? Color.pink : Color.white, in: RoundedRectangle(cornerRadius: 18))
+                        .overlay(RoundedRectangle(cornerRadius: 18).stroke(.black, lineWidth: 3))
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(showing || session.phase != .playing)
+                    .accessibilityLabel(prompts[index].title)
                 }
             }
         }
+        .padding(.horizontal, 20)
+        .padding(.top, 64)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .background(Color(red: 1, green: 0.91, blue: 0.94))
         .onAppear { publish() }
-        .onChange(of: session.phase) { _, _ in publish() }
-    }
-
-    private func holdView(_ hold: (id: Int, x: CGFloat, y: CGFloat, unstable: Bool), in size: CGSize) -> some View {
-        let reachable = isReachable(hold.id)
-        return Button {
-            guard session.phase == .playing else { return }
-            if reachable && !hold.unstable {
-                current = hold.id
-                if hold.id == holds.last?.id { session.succeed() }
-            } else {
-                mistakes += 1
-                if mistakes >= 3 { session.fail() }
+        .onChange(of: session.phase) { _, phase in
+            guard phase == .playing else { return }
+            if !started {
+                started = true
+                beginRound()
+            } else if showing {
+                replay()
             }
             publish()
-        } label: {
-            Circle()
-                .fill(hold.id == current ? Color.golden : (reachable ? Color.mint : Color.white.opacity(0.8)))
-                .frame(width: hold.id == current ? 36 : 28, height: hold.id == current ? 36 : 28)
-                .overlay(Circle().stroke(.black, lineWidth: 3))
-                .shadow(color: reachable && session.phase == .playing ? Color.mint : .clear, radius: 6)
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel(reachable ? "Reachable hold" : "Hold")
     }
 
-    private func isReachable(_ id: Int) -> Bool {
-        guard let hold = holds.first(where: { $0.id == id }), let here = holds.first(where: { $0.id == current }) else { return false }
-        let dx = hold.x - here.x
-        let dy = hold.y - here.y
-        return id != current && dy > -0.02 && hypot(dx, dy) < 0.28
+    private var prompt: String {
+        if sequence.isEmpty { return "Watch, then remember the order" }
+        if showing { return "Watch the order" }
+        return "Your turn. Tap it back."
+    }
+
+    private func beginRound() {
+        sequence.append(Int.random(in: 0..<prompts.count))
+        replay()
+    }
+
+    private func replay() {
+        showing = true
+        step = 0
+        flash = nil
+        showToken += 1
+        playShow(index: 0, token: showToken)
+        publish()
+    }
+
+    private func playShow(index: Int, token: Int) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.32) {
+            guard token == showToken, session.phase == .playing, index < sequence.count else { return }
+            flash = sequence[index]
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.42) {
+                guard token == showToken, session.phase == .playing else { return }
+                flash = nil
+                if index + 1 < sequence.count {
+                    playShow(index: index + 1, token: token)
+                } else {
+                    showing = false
+                    step = 0
+                    publish()
+                }
+            }
+        }
+    }
+
+    private func tap(_ index: Int) {
+        guard session.phase == .playing, !showing, step < sequence.count else { return }
+        flash = index
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.16) {
+            if flash == index { flash = nil }
+        }
+        if index == sequence[step] {
+            step += 1
+            if step == sequence.count {
+                if sequence.count >= 6 {
+                    publish()
+                    session.succeed()
+                } else {
+                    beginRound()
+                }
+            }
+        } else {
+            misses += 1
+            publish()
+            if misses >= 3 {
+                session.fail()
+            } else {
+                replay()
+            }
+        }
     }
 
     private func publish() {
-        guard session.phase == .playing || session.phase == .ready else { return }
-        session.primary = "Climb"
-        session.secondary = "Reach the gold top"
-        session.lives = 3 - mistakes
+        session.primary = "Sequence \(min(sequence.count, 6))/6"
+        session.secondary = showing ? "Watch" : "Your turn"
+        session.lives = max(3 - misses, 0)
     }
 }
 

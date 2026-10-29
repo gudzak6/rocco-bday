@@ -6,7 +6,8 @@ enum QuestRules {
     }
 
     static func currentLevel(completed: Set<Int>) -> Int {
-        (1...10).first { !completed.contains($0) && isUnlocked(level: $0, completed: completed) } ?? 10
+        let last = QuestCatalog.levels.count
+        return (1...last).first { !completed.contains($0) && isUnlocked(level: $0, completed: completed) } ?? last
     }
 }
 
@@ -19,9 +20,13 @@ enum QuestPhotoUnlocks {
     }
 
     static func choose(level: Int, filenames: [String], taken: Set<String>) -> [String] {
+        let levels = QuestCatalog.levels.count
+        let share = count(for: level, total: filenames.count, levels: levels)
         var pool = filenames.filter { !taken.contains($0) }
+        let later = level >= levels ? 0 : ((level + 1)...levels).reduce(0) { $0 + count(for: $1, total: filenames.count, levels: levels) }
+        let extras = max(0, pool.count - later - share)
         pool.shuffle()
-        return Array(pool.prefix(count(for: level, total: filenames.count)))
+        return Array(pool.prefix(share + extras))
     }
 }
 
@@ -43,6 +48,7 @@ final class QuestProgress: ObservableObject {
         self.defaults = defaults
         photoAssignments = Self.loadAssignments(from: defaults, key: photosKey)
         unlockedPhotos = []
+        migrateRemovedRockClimbing()
         grantPhotosForCompletedLevels()
     }
 
@@ -52,24 +58,54 @@ final class QuestProgress: ObservableObject {
         QuestRules.isUnlocked(level: level, completed: completed)
     }
 
-    func complete(_ level: Int) {
-        guard (1...10).contains(level), !completed.contains(level) else { return }
-        guard QuestRules.isUnlocked(level: level, completed: completed) else { return }
+    @discardableResult
+    func complete(_ level: Int) -> [String] {
+        guard (1...QuestCatalog.levels.count).contains(level), !completed.contains(level) else { return [] }
+        guard QuestRules.isUnlocked(level: level, completed: completed) else { return [] }
         completed.insert(level)
         defaults.set(completed.sorted(), forKey: key)
         grantPhotosForCompletedLevels()
+        return photoAssignments[level] ?? []
+    }
+
+    private func migrateRemovedRockClimbing() {
+        let flag = "roccoQuest.removedRockClimbing"
+        guard !defaults.bool(forKey: flag) else { return }
+        var shiftedCompleted = Set<Int>()
+        for level in completed {
+            if level < 3 { shiftedCompleted.insert(level) }
+            else if level > 3 { shiftedCompleted.insert(level - 1) }
+        }
+        completed = shiftedCompleted
+        defaults.set(completed.sorted(), forKey: key)
+        var shiftedPhotos: [Int: [String]] = [:]
+        for (level, names) in photoAssignments {
+            if level < 3 { shiftedPhotos[level] = names }
+            else if level > 3 { shiftedPhotos[level - 1] = names }
+        }
+        photoAssignments = shiftedPhotos
+        saveAssignments()
+        defaults.set(true, forKey: flag)
     }
 
     private func grantPhotosForCompletedLevels() {
         let filenames = PhotoDropCatalog.drops().map(\.filename)
+        let available = Set(filenames)
         var changed = false
-        for level in completed.sorted() where photoAssignments[level] == nil {
+        for level in Array(photoAssignments.keys) {
+            let kept = (photoAssignments[level] ?? []).filter { available.contains($0) }
+            if kept != photoAssignments[level] {
+                photoAssignments[level] = kept
+                changed = true
+            }
+        }
+        for level in completed.sorted() where photoAssignments[level]?.isEmpty != false {
             let taken = Set(photoAssignments.values.flatMap { $0 })
             photoAssignments[level] = QuestPhotoUnlocks.choose(level: level, filenames: filenames, taken: taken)
             changed = true
         }
         if changed { saveAssignments() }
-        unlockedPhotos = completed.sorted().flatMap { photoAssignments[$0] ?? [] }
+        unlockedPhotos = completed.sorted().flatMap { photoAssignments[$0] ?? [] }.filter { available.contains($0) }
     }
 
     private func saveAssignments() {
@@ -187,7 +223,7 @@ enum QuestCatalog {
             number: 2,
             title: "Cookie Chaos",
             theme: "Cookie bakery",
-            instructions: "Drag Rocco to catch falling cookies. Broccoli and burnt cookies are out. Collect 20 cookies. Three bad catches end the round.",
+            instructions: "Drag Rocco under the golden cookies and catch 20 of them. Let the green broccoli and the black burnt cookies fall past. Catching 3 of those ends the round.",
             accentName: "orange",
             memorySender: "Joey",
             memoryTitle: "Plenty of cookies",
@@ -196,20 +232,9 @@ enum QuestCatalog {
         ),
         QuestLevel(
             number: 3,
-            title: "Rock Climbing Rush",
-            theme: "Climbing gym",
-            instructions: "Tap a glowing hold to climb. Pale holds are in reach. Unstable holds and far taps count as misses. Reach the top. Three misses ends the climb.",
-            accentName: "mint",
-            memorySender: "The wall",
-            memoryTitle: "Chalk and the top hold",
-            memoryBody: "Chalk on your hands, one more hold, and a view that was worth the reach. Happy birthday, Rocco.",
-            memoryAsset: nil
-        ),
-        QuestLevel(
-            number: 4,
             title: "Boyfriend of the Year",
-            theme: "Date-night sky",
-            instructions: "Hold left or right to run and tap jump. Collect 10 hearts and reach the date-night door. Three falls or bumps ends the date.",
+            theme: "Remember the date",
+            instructions: "Watch the order the date lights up, then tap Cookie, Flowers, Note, and Song back the same way. Each round adds one more. Remember 6 in a row. Three wrong taps ends the date.",
             accentName: "pink",
             memorySender: "Sheba",
             memoryTitle: "Show up",
@@ -217,7 +242,7 @@ enum QuestCatalog {
             memoryAsset: "ShebaMessage"
         ),
         QuestLevel(
-            number: 5,
+            number: 4,
             title: "Gamer Mode",
             theme: "Neon maze",
             instructions: "Swipe or use the pad to move. Collect all 5 controllers, then step on the exit. Avoid the drifting enemies. Three hits sends you back.",
@@ -228,7 +253,7 @@ enum QuestCatalog {
             memoryAsset: nil
         ),
         QuestLevel(
-            number: 6,
+            number: 5,
             title: "The Loyalty Test",
             theme: "Cartoon city",
             instructions: "Drag Rocco through the block. Walk over a gift to pick it up, then walk it to the matching friend. Help all three. The clock only changes your score.",
@@ -239,7 +264,7 @@ enum QuestCatalog {
             memoryAsset: "SharonMessage"
         ),
         QuestLevel(
-            number: 7,
+            number: 6,
             title: "Long Island Legend",
             theme: "Train to the city",
             instructions: "Swipe left or right to change lanes, and swipe up to jump luggage. Collect 8 tickets and ride 400 meters to the station. Three bumps ends the trip.",
@@ -250,7 +275,7 @@ enum QuestCatalog {
             memoryAsset: "DerekMessage"
         ),
         QuestLevel(
-            number: 8,
+            number: 7,
             title: "Memory Lane",
             theme: "Scrapbook room",
             instructions: "Tap cards to flip them. Find all 6 pairs. There is no fail state. Attempts are just part of the story.",
@@ -261,7 +286,7 @@ enum QuestCatalog {
             memoryAsset: "MaryMessage"
         ),
         QuestLevel(
-            number: 9,
+            number: 8,
             title: "Birthday Bake-Off",
             theme: "Birthday kitchen",
             instructions: "Drag the next ingredient onto the cake. The recipe is on the card. A wrong ingredient bounces back so you can try again. Finish all 8 steps.",
@@ -272,14 +297,14 @@ enum QuestCatalog {
             memoryAsset: nil
         ),
         QuestLevel(
-            number: 10,
+            number: 9,
             title: "The Legendary Rocco",
             theme: "Golden castle",
             instructions: "Four short stages. Jump the hurdles, catch the cookies, climb the holds, then grab the golden controller. If a stage slips, only that stage starts over.",
             accentName: "gold",
             memorySender: "Birthday GO",
             memoryTitle: "The Legendary Rocco",
-            memoryBody: "Ten levels, one birthday, and a city full of people who showed up. This card is yours.",
+            memoryBody: "Nine levels, one birthday, and a city full of people who showed up. This card is yours.",
             memoryAsset: "ProfileCard"
         ),
     ]

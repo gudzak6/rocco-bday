@@ -13,7 +13,7 @@ struct OnboardingPage: Identifiable, Hashable {
             id: 0,
             headline: "A Birthday Adventure Awaits!",
             subtitle: "Someone made an entire game just for you.",
-            body: "Ten birthday levels are waiting. Win them in order. Every clear unlocks photos on the Birthday Dex, and your friends’ notes stay in Messages.",
+            body: "Nine birthday levels are waiting. Win them in order. Every clear unlocks photos on the Birthday Dex, and your friends’ notes stay in Messages.",
             buttonTitle: "Open Your Gift",
             symbol: "gift.fill"
         ),
@@ -28,8 +28,8 @@ struct OnboardingPage: Identifiable, Hashable {
         OnboardingPage(
             id: 2,
             headline: "Win the Mini-Games",
-            subtitle: "Run, catch, climb, and bake.",
-            body: "Each flag is a short game about you: a marathon, cookies, a climbing wall, a race to the door, a maze, gift deliveries, a train, a matching game, a bake-off, and a last castle. Lose a round and you can try that level again.",
+            subtitle: "Run, catch, race, and bake.",
+            body: "Each flag is a short game about you: a marathon, cookies, a memory test, a maze, gift deliveries, a train, a matching game, a bake-off, and a last castle. Lose a round and you can try that level again.",
             buttonTitle: "Next",
             symbol: "sparkles"
         ),

@@ -18,20 +18,22 @@ struct QuestUnlockTests {
         #expect(QuestRules.currentLevel(completed: done) == 3)
     }
 
-    @Test func catalogHasTenLevelsInOrder() {
-        #expect(QuestCatalog.levels.map(\.number) == Array(1...10))
-        #expect(Set(QuestCatalog.levels.map(\.title)).count == 10)
+    @Test func catalogHasNineLevelsInOrder() {
+        #expect(QuestCatalog.levels.map(\.number) == Array(1...9))
+        #expect(Set(QuestCatalog.levels.map(\.title)).count == 9)
+        #expect(!QuestCatalog.levels.contains { $0.title == "Rock Climbing Rush" })
     }
 }
 
 struct QuestPhotoUnlockTests {
-    @Test func tenWinsUnlockEveryPhotoExactlyOnce() {
+    @Test func everyWinUnlocksPhotosExactlyOnce() {
         let names = (1...40).map { "photo-\($0).jpg" }
         var taken = Set<String>()
         var unlocked: [String] = []
-        for level in 1...10 {
+        let count = QuestCatalog.levels.count
+        for level in 1...count {
             let picked = QuestPhotoUnlocks.choose(level: level, filenames: names, taken: taken)
-            #expect(picked.count == 4)
+            #expect(picked.count == QuestPhotoUnlocks.count(for: level, total: names.count, levels: count))
             #expect(Set(picked).isDisjoint(with: taken))
             taken.formUnion(picked)
             unlocked.append(contentsOf: picked)

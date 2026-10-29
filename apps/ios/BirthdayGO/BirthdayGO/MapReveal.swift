@@ -136,10 +136,15 @@ enum PhotoDropCatalog {
 @MainActor
 enum PhotoDropImage {
     private static let thumbs = NSCache<NSString, UIImage>()
+    private static let previews = NSCache<NSString, UIImage>()
     private static let opened = NSCache<NSString, UIImage>()
 
     static func thumbnail(filename: String) -> UIImage? {
         cached(filename: filename, maxPixel: 96, cache: thumbs, costLimit: 8 * 1024 * 1024)
+    }
+
+    static func preview(filename: String) -> UIImage? {
+        cached(filename: filename, maxPixel: 640, cache: previews, costLimit: 16 * 1024 * 1024)
     }
 
     static func image(filename: String) -> UIImage? {
@@ -148,7 +153,7 @@ enum PhotoDropImage {
 
     private static func cached(filename: String, maxPixel: Int, cache: NSCache<NSString, UIImage>, costLimit: Int) -> UIImage? {
         cache.totalCostLimit = costLimit
-        cache.countLimit = maxPixel <= 96 ? 80 : 2
+        cache.countLimit = maxPixel <= 96 ? 80 : (maxPixel <= 640 ? 8 : 2)
         let key = filename as NSString
         if let cached = cache.object(forKey: key) { return cached }
         let name = (filename as NSString).deletingPathExtension
@@ -169,7 +174,28 @@ enum PhotoDropImage {
             kCGImageSourceShouldCacheImmediately: true,
         ] as CFDictionary
         guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options) else { return nil }
-        return UIImage(cgImage: cgImage)
+        return flattened(cgImage)
+    }
+
+    /// Display P3 photos stay black if the thumbnail keeps their wide color space.
+    private static func flattened(_ image: CGImage) -> UIImage {
+        let width = image.width
+        let height = image.height
+        let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) ?? CGColorSpaceCreateDeviceRGB()
+        guard let context = CGContext(
+            data: nil,
+            width: width,
+            height: height,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            return UIImage(cgImage: image)
+        }
+        context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+        guard let rendered = context.makeImage() else { return UIImage(cgImage: image) }
+        return UIImage(cgImage: rendered)
     }
 }
 

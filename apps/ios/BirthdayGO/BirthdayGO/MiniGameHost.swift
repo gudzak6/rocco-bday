@@ -55,15 +55,16 @@ struct ArcadeScreen<S: SKScene>: View {
 
 struct QuestPlayView: View {
     let level: QuestLevel
-    var onVictory: () -> Void
+    var onVictory: () -> [String]
     var onClose: () -> Void
     @StateObject private var session = QuestSession()
     @State private var savedWin = false
+    @State private var unlockedFilenames: [String] = []
 
     var body: some View {
         ZStack {
             if session.phase == .won {
-                LevelCompleteView(level: level, onContinue: onClose)
+                LevelCompleteView(level: level, unlockedFilenames: unlockedFilenames, onContinue: onClose)
             } else if session.phase == .ready {
                 readyCard
             } else {
@@ -83,7 +84,7 @@ struct QuestPlayView: View {
         .onChange(of: session.phase) { _, phase in
             if phase == .won, !savedWin {
                 savedWin = true
-                onVictory()
+                unlockedFilenames = onVictory()
             }
         }
     }
@@ -93,13 +94,12 @@ struct QuestPlayView: View {
         switch level.number {
         case 1: MarathonHost(session: session)
         case 2: CookieHost(session: session)
-        case 3: ClimbingGame(session: session)
-        case 4: BoyfriendHost(session: session)
-        case 5: MazeHost(session: session)
-        case 6: LoyaltyGame(session: session)
-        case 7: TrainHost(session: session)
-        case 8: MemoryMatchGame(session: session)
-        case 9: BakeOffGame(session: session)
+        case 3: BoyfriendMemoryGame(session: session)
+        case 4: MazeHost(session: session)
+        case 5: LoyaltyGame(session: session)
+        case 6: TrainHost(session: session)
+        case 7: MemoryMatchGame(session: session)
+        case 8: BakeOffGame(session: session)
         default: LegendaryGame(session: session)
         }
     }
@@ -199,44 +199,6 @@ struct CookieHost: View {
     var body: some View {
         ArcadeScreen(session: session, scene: scene, primary: { "Cookies \($0.cookies)/20" }, secondary: { "Combo \($0.combo)" }, lives: { 3 - $0.bad }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
             .ignoresSafeArea()
-    }
-}
-
-struct BoyfriendHost: View {
-    @ObservedObject var session: QuestSession
-    @State private var scene = BoyfriendScene()
-    var body: some View {
-        ArcadeScreen(session: session, scene: scene, primary: { "Hearts \($0.hearts)/10" }, secondary: { $0.hint }, lives: { 3 - $0.hits }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
-            .ignoresSafeArea()
-            .overlay(alignment: .bottom) {
-                if session.phase == .playing {
-                    HStack(spacing: 12) {
-                        holdButton("arrow.left") { scene.inputX = $0 ? -1 : 0 }
-                        Button { scene.jumpQueued = true } label: {
-                            Text("Jump").font(.system(.headline, design: .rounded, weight: .black))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(Color.pink, in: RoundedRectangle(cornerRadius: 12))
-                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(.black, lineWidth: 3))
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Jump")
-                        holdButton("arrow.right") { scene.inputX = $0 ? 1 : 0 }
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 12)
-                }
-            }
-    }
-
-    private func holdButton(_ symbol: String, set: @escaping (Bool) -> Void) -> some View {
-        Image(systemName: symbol)
-            .font(.title2.weight(.black))
-            .frame(width: 64, height: 52)
-            .background(.white, in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(.black, lineWidth: 3))
-            .gesture(DragGesture(minimumDistance: 0).onChanged { _ in set(true) }.onEnded { _ in set(false) })
-            .accessibilityLabel(symbol == "arrow.left" ? "Move left" : "Move right")
     }
 }
 
