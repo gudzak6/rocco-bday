@@ -69,98 +69,9 @@ struct ClimbingGame: View {
 
     private func publish() {
         guard session.phase == .playing || session.phase == .ready else { return }
-        session.primary = "Climb"
-        session.secondary = "Reach the gold top"
-        session.lives = 3 - mistakes
-    }
-}
-
-struct LoyaltyGame: View {
-    @ObservedObject var session: QuestSession
-    @State private var rocco = CGPoint(x: 80, y: 220)
-    @State private var carrying: Int?
-    @State private var delivered: Set<Int> = []
-    @State private var elapsed = 0
-    private let friends: [(id: Int, name: String, gift: String, spot: CGPoint, item: CGPoint)] = [
-        (0, "Sharon", "Note", CGPoint(x: 300, y: 120), CGPoint(x: 70, y: 80)),
-        (1, "Joey", "Cookie", CGPoint(x: 80, y: 420), CGPoint(x: 280, y: 300)),
-        (2, "Derek", "Ticket", CGPoint(x: 300, y: 460), CGPoint(x: 160, y: 160)),
-    ]
-
-    var body: some View {
-        GeometryReader { geo in
-            let scale = min(geo.size.width / 360, geo.size.height / 560)
-            ZStack {
-                Color.warmWhite
-                RoundedRectangle(cornerRadius: 24).fill(Color.skyBlue.opacity(0.25)).padding(16)
-                ForEach(friends, id: \.id) { friend in
-                    marker(friend.gift, at: scaled(friend.item, scale, geo.size), done: carrying == friend.id || delivered.contains(friend.id))
-                    VStack(spacing: 2) {
-                        Text(friend.name).font(.caption.weight(.black))
-                        Text(delivered.contains(friend.id) ? "Helped" : "Needs \(friend.gift)")
-                            .font(.caption2.weight(.bold))
-                    }
-                    .padding(6)
-                    .background(.white, in: RoundedRectangle(cornerRadius: 8))
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(.black, lineWidth: 2))
-                    .position(scaled(friend.spot, scale, geo.size))
-                }
-                RoccoSprite(shirt: .golden)
-                    .frame(width: 42, height: 56)
-                    .position(scaled(rocco, scale, geo.size))
-                if let next = friends.first(where: { !delivered.contains($0.id) }) {
-                    Image(systemName: "arrow.up")
-                        .font(.title2.weight(.black))
-                        .foregroundStyle(Color.birthdayPurple)
-                        .position(arrowTarget(next, scale, geo.size))
-                        .allowsHitTesting(false)
-                }
-            }
-            .contentShape(Rectangle())
-            .gesture(DragGesture(minimumDistance: 0).onChanged { value in
-                guard session.phase == .playing else { return }
-                rocco = CGPoint(x: value.location.x / scale, y: (value.location.y - (geo.size.height - 560 * scale) / 2) / scale)
-                resolve()
-            })
-            .onReceive(Timer.publish(every: 1, on: .main, in: .common).autoconnect()) { _ in
-                guard session.phase == .playing else { return }
-                elapsed += 1
-                session.primary = "Friends \(delivered.count)/3"
-                session.secondary = "\(elapsed)s on the clock"
-                session.lives = nil
-            }
-        }
-    }
-
-    private func scaled(_ point: CGPoint, _ scale: CGFloat, _ size: CGSize) -> CGPoint {
-        CGPoint(x: (size.width - 360 * scale) / 2 + point.x * scale, y: (size.height - 560 * scale) / 2 + point.y * scale)
-    }
-
-    private func arrowTarget(_ friend: (id: Int, name: String, gift: String, spot: CGPoint, item: CGPoint), _ scale: CGFloat, _ size: CGSize) -> CGPoint {
-        let target = carrying == friend.id ? friend.spot : friend.item
-        return scaled(CGPoint(x: target.x, y: target.y - 36), scale, size)
-    }
-
-    private func marker(_ title: String, at point: CGPoint, done: Bool) -> some View {
-        Text(done ? "✓" : title)
-            .font(.caption.weight(.black))
-            .padding(8)
-            .background(done ? Color.mint : Color.golden, in: Circle())
-            .overlay(Circle().stroke(.black, lineWidth: 2))
-            .position(point)
-    }
-
-    private func resolve() {
-        for friend in friends where !delivered.contains(friend.id) {
-            if carrying == nil, hypot(rocco.x - friend.item.x, rocco.y - friend.item.y) < 36 {
-                carrying = friend.id
-            }
-            if carrying == friend.id, hypot(rocco.x - friend.spot.x, rocco.y - friend.spot.y) < 42 {
-                delivered.insert(friend.id)
-                carrying = nil
-                if delivered.count == 3 { session.succeed() }
-            }
-        }
+        session.hud.primary = "Climb"
+        session.hud.secondary = "Reach the gold top"
+        session.hud.lives = 3 - mistakes
     }
 }
 
@@ -224,9 +135,9 @@ struct MemoryMatchGame: View {
     }
 
     private func publish() {
-        session.primary = "Pairs \(cards.filter(\.matched).count / 2)/6"
-        session.secondary = "Attempts \(attempts)"
-        session.lives = nil
+        session.hud.primary = "Pairs \(cards.filter(\.matched).count / 2)/6"
+        session.hud.secondary = "Attempts \(attempts)"
+        session.hud.lives = nil
     }
 }
 
@@ -238,7 +149,7 @@ struct MatchCard: Identifiable {
     var matched = false
 
     static func deck() -> [MatchCard] {
-        let symbols = ["figure.run", "birthday.cake", "heart.fill", "gamecontroller.fill", "tram.fill", "photo"]
+        let symbols = ["figure.run", "birthday.cake", "heart.fill", "star.fill", "photo", "figure.climbing"]
         return symbols.enumerated().flatMap { index, symbol in
             [MatchCard(pair: index, symbol: symbol), MatchCard(pair: index, symbol: symbol)]
         }.shuffled()
@@ -314,9 +225,9 @@ struct BakeOffGame: View {
     }
 
     private func publish() {
-        session.primary = "Steps \(step)/8"
-        session.secondary = step < recipe.count ? "Add \(recipe[step])" : "Done"
-        session.lives = nil
+        session.hud.primary = "Steps \(step)/8"
+        session.hud.secondary = step < recipe.count ? "Add \(recipe[step])" : "Done"
+        session.hud.lives = nil
     }
 }
 
@@ -353,9 +264,9 @@ struct LegendaryGame: View {
     }
 
     private func publish() {
-        session.primary = "Stage \(min(stage + 1, 4))/4"
-        session.secondary = ["Jump the hurdles", "Catch 6 cookies", "Tap the holds", "Grab the controller"][min(stage, 3)]
-        session.lives = nil
+        session.hud.primary = "Stage \(min(stage + 1, 4))/4"
+        session.hud.secondary = ["Jump the hurdles", "Catch 6 cookies", "Tap the holds", "Grab the birthday star"][min(stage, 3)]
+        session.hud.lives = nil
     }
 }
 
@@ -499,10 +410,10 @@ private struct LegendGrab: View {
     var body: some View {
         GeometryReader { geo in
             ZStack {
-                Text("Tap the controller")
+                Text("Tap the birthday star")
                     .font(.system(.title3, design: .rounded, weight: .black))
                     .position(x: geo.size.width / 2, y: 40)
-                Image(systemName: "gamecontroller.fill")
+                Image(systemName: "star.fill")
                     .font(.system(size: 48))
                     .foregroundStyle(Color.golden)
                     .padding(16)

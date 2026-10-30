@@ -136,19 +136,24 @@ enum PhotoDropCatalog {
 @MainActor
 enum PhotoDropImage {
     private static let thumbs = NSCache<NSString, UIImage>()
+    private static let covers = NSCache<NSString, UIImage>()
     private static let opened = NSCache<NSString, UIImage>()
 
     static func thumbnail(filename: String) -> UIImage? {
-        cached(filename: filename, maxPixel: 96, cache: thumbs, costLimit: 8 * 1024 * 1024)
+        cached(filename: filename, maxPixel: 96, cache: thumbs, costLimit: 8 * 1024 * 1024, countLimit: 80)
+    }
+
+    static func cover(filename: String) -> UIImage? {
+        cached(filename: filename, maxPixel: 480, cache: covers, costLimit: 16 * 1024 * 1024, countLimit: 20)
     }
 
     static func image(filename: String) -> UIImage? {
-        cached(filename: filename, maxPixel: 1200, cache: opened, costLimit: 18 * 1024 * 1024)
+        cached(filename: filename, maxPixel: 1200, cache: opened, costLimit: 18 * 1024 * 1024, countLimit: 2)
     }
 
-    private static func cached(filename: String, maxPixel: Int, cache: NSCache<NSString, UIImage>, costLimit: Int) -> UIImage? {
+    private static func cached(filename: String, maxPixel: Int, cache: NSCache<NSString, UIImage>, costLimit: Int, countLimit: Int) -> UIImage? {
         cache.totalCostLimit = costLimit
-        cache.countLimit = maxPixel <= 96 ? 80 : 2
+        cache.countLimit = countLimit
         let key = filename as NSString
         if let cached = cache.object(forKey: key) { return cached }
         let name = (filename as NSString).deletingPathExtension

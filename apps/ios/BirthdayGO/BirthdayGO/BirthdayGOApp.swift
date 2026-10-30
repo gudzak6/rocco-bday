@@ -162,7 +162,10 @@ struct MainTabView: View {
                 .environmentObject(questProgress)
                 .tag(1)
                 .tabItem { Label("Birthday Dex", systemImage: "photo.on.rectangle.angled") }
-            MemoryBookView().tag(2).tabItem { Label("Messages", systemImage: "envelope.fill") }
+            MemoryBookView()
+                .environmentObject(questProgress)
+                .tag(2)
+                .tabItem { Label("Messages", systemImage: "envelope.fill") }
             ProfileView().tag(3).tabItem { Label("Me", systemImage: "person.crop.circle.fill") }
         }
         .overlay(alignment: .top) {

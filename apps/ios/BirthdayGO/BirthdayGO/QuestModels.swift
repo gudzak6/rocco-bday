@@ -1,17 +1,20 @@
 import SwiftUI
 
 enum QuestRules {
+    static let levelCount = 7
+    static var levelRange: ClosedRange<Int> { 1...levelCount }
+
     static func isUnlocked(level: Int, completed: Set<Int>) -> Bool {
         level == 1 || completed.contains(level - 1)
     }
 
     static func currentLevel(completed: Set<Int>) -> Int {
-        (1...10).first { !completed.contains($0) && isUnlocked(level: $0, completed: completed) } ?? 10
+        levelRange.first { !completed.contains($0) && isUnlocked(level: $0, completed: completed) } ?? levelCount
     }
 }
 
 enum QuestPhotoUnlocks {
-    static func count(for level: Int, total: Int, levels: Int = 10) -> Int {
+    static func count(for level: Int, total: Int, levels: Int = QuestRules.levelCount) -> Int {
         guard total > 0, (1...levels).contains(level) else { return 0 }
         let base = total / levels
         let extra = total % levels
@@ -38,9 +41,10 @@ final class QuestProgress: ObservableObject {
     private var photoAssignments: [Int: [String]]
 
     init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+        Self.migrateProgressIfNeeded(defaults: defaults)
         let saved = defaults.array(forKey: key) as? [Int] ?? []
         completed = Set(saved)
-        self.defaults = defaults
         photoAssignments = Self.loadAssignments(from: defaults, key: photosKey)
         unlockedPhotos = []
         grantPhotosForCompletedLevels()
@@ -52,8 +56,12 @@ final class QuestProgress: ObservableObject {
         QuestRules.isUnlocked(level: level, completed: completed)
     }
 
+    func photos(for level: Int) -> [String] {
+        photoAssignments[level] ?? []
+    }
+
     func complete(_ level: Int) {
-        guard (1...10).contains(level), !completed.contains(level) else { return }
+        guard QuestRules.levelRange.contains(level), !completed.contains(level) else { return }
         guard QuestRules.isUnlocked(level: level, completed: completed) else { return }
         completed.insert(level)
         defaults.set(completed.sorted(), forKey: key)
@@ -62,13 +70,32 @@ final class QuestProgress: ObservableObject {
 
     private func grantPhotosForCompletedLevels() {
         let filenames = PhotoDropCatalog.drops().map(\.filename)
+        let valid = Set(filenames)
+        var next: [Int: [String]] = [:]
         var changed = false
-        for level in completed.sorted() where photoAssignments[level] == nil {
-            let taken = Set(photoAssignments.values.flatMap { $0 })
-            photoAssignments[level] = QuestPhotoUnlocks.choose(level: level, filenames: filenames, taken: taken)
-            changed = true
+        for (level, names) in photoAssignments {
+            let cleaned = names.filter(valid.contains)
+            if cleaned != names { changed = true }
+            if !cleaned.isEmpty { next[level] = cleaned }
         }
-        if changed { saveAssignments() }
+        for level in completed.sorted() {
+            var have = next[level] ?? []
+            let need = QuestPhotoUnlocks.count(for: level, total: filenames.count)
+            if have.count < need {
+                let taken = Set(next.values.flatMap { $0 })
+                var pool = filenames.filter { !taken.contains($0) }
+                pool.shuffle()
+                have.append(contentsOf: pool.prefix(need - have.count))
+                next[level] = have
+                changed = true
+            }
+        }
+        if changed {
+            photoAssignments = next
+            saveAssignments()
+        } else {
+            photoAssignments = next
+        }
         unlockedPhotos = completed.sorted().flatMap { photoAssignments[$0] ?? [] }
     }
 
@@ -76,6 +103,34 @@ final class QuestProgress: ObservableObject {
         let raw = Dictionary(uniqueKeysWithValues: photoAssignments.map { (String($0.key), $0.value) })
         if let data = try? JSONEncoder().encode(raw) {
             defaults.set(data, forKey: photosKey)
+        }
+    }
+
+    private static func migrateProgressIfNeeded(defaults: UserDefaults) {
+        let versionKey = "roccoQuest.progressVersion"
+        guard defaults.integer(forKey: versionKey) < 2 else { return }
+        let saved = defaults.array(forKey: "roccoQuest.completedLevels") as? [Int] ?? []
+        defaults.set(saved.compactMap(remapRetiredLevel).sorted(), forKey: "roccoQuest.completedLevels")
+        var next: [Int: [String]] = [:]
+        for (level, names) in loadAssignments(from: defaults, key: "roccoQuest.photosByLevel") {
+            if let mapped = remapRetiredLevel(level), next[mapped] == nil {
+                next[mapped] = names
+            }
+        }
+        let raw = Dictionary(uniqueKeysWithValues: next.map { (String($0.key), $0.value) })
+        if let data = try? JSONEncoder().encode(raw) {
+            defaults.set(data, forKey: "roccoQuest.photosByLevel")
+        }
+        defaults.set(2, forKey: versionKey)
+    }
+
+    private static func remapRetiredLevel(_ level: Int) -> Int? {
+        switch level {
+        case 1, 2, 3, 4: level
+        case 8: 5
+        case 9: 6
+        case 10: 7
+        default: nil
         }
     }
 
@@ -91,13 +146,24 @@ final class QuestProgress: ObservableObject {
 }
 
 @MainActor
-final class QuestSession: ObservableObject {
-    @Published var phase: QuestPhase = .ready
+final class QuestHUD: ObservableObject {
     @Published var primary = ""
     @Published var secondary = ""
     @Published var lives: Int?
+
+    func reset() {
+        primary = ""
+        secondary = ""
+        lives = nil
+    }
+}
+
+@MainActor
+final class QuestSession: ObservableObject {
+    @Published var phase: QuestPhase = .ready
     @Published var countdown = 3
     @Published var runID = UUID()
+    let hud = QuestHUD()
     private var countdownTask: Task<Void, Never>?
 
     func startCountdown() {
@@ -139,8 +205,7 @@ final class QuestSession: ObservableObject {
     func retry() {
         countdownTask?.cancel()
         phase = .ready
-        primary = ""
-        secondary = ""
+        hud.reset()
         runID = UUID()
     }
 }
@@ -178,10 +243,10 @@ enum QuestCatalog {
             theme: "NYC marathon",
             instructions: "Rocco runs on his own. Tap to jump, and double-tap for a higher jump. Clear cones and puddles with a hop, and hurdles with the higher jump. Reach 500 meters and collect 5 energy gels. Three hits ends the run.",
             accentName: "sky",
-            memorySender: "The course",
-            memoryTitle: "The long way around",
-            memoryBody: "Miles look shorter when someone is waiting at the finish. This route is yours, Rocco.",
-            memoryAsset: nil
+            memorySender: "Sharon",
+            memoryTitle: "HAPPY BIRTHDAY ROCCO!!",
+            memoryBody: "HAPPY BIRTHDAY ROCCO!!",
+            memoryAsset: "SharonMessage"
         ),
         QuestLevel(
             number: 2,
@@ -200,10 +265,10 @@ enum QuestCatalog {
             theme: "Climbing gym",
             instructions: "Tap a glowing hold to climb. Pale holds are in reach. Unstable holds and far taps count as misses. Reach the top. Three misses ends the climb.",
             accentName: "mint",
-            memorySender: "The wall",
-            memoryTitle: "Chalk and the top hold",
-            memoryBody: "Chalk on your hands, one more hold, and a view that was worth the reach. Happy birthday, Rocco.",
-            memoryAsset: nil
+            memorySender: "Derek",
+            memoryTitle: "The ride in",
+            memoryBody: "HAPPY BIRTHDAY!! Wishing you the happiest 27th to add to what’s already a huge year for ya! Excited for you to try out the game and manifesting a jets win for your bday 🤞🏻",
+            memoryAsset: "DerekMessage"
         ),
         QuestLevel(
             number: 4,
@@ -218,39 +283,6 @@ enum QuestCatalog {
         ),
         QuestLevel(
             number: 5,
-            title: "Gamer Mode",
-            theme: "Neon maze",
-            instructions: "Swipe or use the pad to move. Collect all 5 controllers, then step on the exit. Avoid the drifting enemies. Three hits sends you back.",
-            accentName: "purple",
-            memorySender: "Player two",
-            memoryTitle: "One more round",
-            memoryBody: "High score or not, you sat down and played. That is the whole game, Rocco.",
-            memoryAsset: nil
-        ),
-        QuestLevel(
-            number: 6,
-            title: "The Loyalty Test",
-            theme: "Cartoon city",
-            instructions: "Drag Rocco through the block. Walk over a gift to pick it up, then walk it to the matching friend. Help all three. The clock only changes your score.",
-            accentName: "gold",
-            memorySender: "Sharon",
-            memoryTitle: "The people who stay",
-            memoryBody: "HAPPY BIRTHDAY ROCCO!!",
-            memoryAsset: "SharonMessage"
-        ),
-        QuestLevel(
-            number: 7,
-            title: "Long Island Legend",
-            theme: "Train to the city",
-            instructions: "Swipe left or right to change lanes, and swipe up to jump luggage. Collect 8 tickets and ride 400 meters to the station. Three bumps ends the trip.",
-            accentName: "sky",
-            memorySender: "Derek",
-            memoryTitle: "The ride in",
-            memoryBody: "HAPPY BIRTHDAY!! Wishing you the happiest 27th to add to what’s already a huge year for ya! Excited for you to try out the game and manifesting a jets win for your bday 🤞🏻",
-            memoryAsset: "DerekMessage"
-        ),
-        QuestLevel(
-            number: 8,
             title: "Memory Lane",
             theme: "Scrapbook room",
             instructions: "Tap cards to flip them. Find all 6 pairs. There is no fail state. Attempts are just part of the story.",
@@ -261,7 +293,7 @@ enum QuestCatalog {
             memoryAsset: "MaryMessage"
         ),
         QuestLevel(
-            number: 9,
+            number: 6,
             title: "Birthday Bake-Off",
             theme: "Birthday kitchen",
             instructions: "Drag the next ingredient onto the cake. The recipe is on the card. A wrong ingredient bounces back so you can try again. Finish all 8 steps.",
@@ -272,14 +304,14 @@ enum QuestCatalog {
             memoryAsset: nil
         ),
         QuestLevel(
-            number: 10,
+            number: 7,
             title: "The Legendary Rocco",
             theme: "Golden castle",
-            instructions: "Four short stages. Jump the hurdles, catch the cookies, climb the holds, then grab the golden controller. If a stage slips, only that stage starts over.",
+            instructions: "Four short stages. Jump the hurdles, catch the cookies, climb the holds, then grab the birthday star. If a stage slips, only that stage starts over.",
             accentName: "gold",
             memorySender: "Birthday GO",
             memoryTitle: "The Legendary Rocco",
-            memoryBody: "Ten levels, one birthday, and a city full of people who showed up. This card is yours.",
+            memoryBody: "Seven levels, one birthday, and a city full of people who showed up. This card is yours.",
             memoryAsset: "ProfileCard"
         ),
     ]

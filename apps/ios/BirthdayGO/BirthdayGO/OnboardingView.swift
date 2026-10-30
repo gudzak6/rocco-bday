@@ -11,17 +11,17 @@ struct OnboardingPage: Identifiable, Hashable {
     static let all: [OnboardingPage] = [
         OnboardingPage(
             id: 0,
-            headline: "A Birthday Adventure Awaits!",
-            subtitle: "Someone made an entire game just for you.",
-            body: "Ten birthday levels are waiting. Win them in order. Every clear unlocks photos on the Birthday Dex, and your friends’ notes stay in Messages.",
-            buttonTitle: "Open Your Gift",
-            symbol: "gift.fill"
+            headline: "Rocco's Quest",
+            subtitle: "A birthday adventure made just for you.",
+            body: "Seven levels wait on the Quest map. Win them in order. Every win unlocks a set of photos in that level’s Birthday Dex album, plus a birthday message on the Messages tab.",
+            buttonTitle: "Let's Go",
+            symbol: "flag.fill"
         ),
         OnboardingPage(
             id: 1,
             headline: "Play the Quest",
             subtitle: "One flag at a time.",
-            body: "Tap the lit flag, then tap Start. The game stays still through the 3-2-1 countdown. Clear the level and the next flag lights up. A short memory opens with the win, and you can reread it from the quest.",
+            body: "Tap the lit flag, then tap Start. The game stays still through the 3-2-1 countdown. Clear the level and the next flag lights up.",
             buttonTitle: "Next",
             symbol: "flag.fill"
         ),
@@ -29,15 +29,15 @@ struct OnboardingPage: Identifiable, Hashable {
             id: 2,
             headline: "Win the Mini-Games",
             subtitle: "Run, catch, climb, and bake.",
-            body: "Each flag is a short game about you: a marathon, cookies, a climbing wall, a race to the door, a maze, gift deliveries, a train, a matching game, a bake-off, and a last castle. Lose a round and you can try that level again.",
+            body: "Each flag is a short game about you: a marathon, cookies, a climbing wall, a race to the door, a matching game, a bake-off, and a last castle. Lose a round and you can try that level again.",
             buttonTitle: "Next",
             symbol: "sparkles"
         ),
         OnboardingPage(
             id: 3,
-            headline: "Unlock Photos",
-            subtitle: "A few new pictures every win.",
-            body: "Winning a level adds a random set of photos to the Birthday Dex. Open that tab to look through them. Under the photos, the app tells you how many are left to unlock.",
+            headline: "Photos & Memories",
+            subtitle: "Each level unlocks a set of both.",
+            body: "Clear a level and two things open. A set of photos fills that level’s album on Birthday Dex. That friend’s birthday message unlocks on the Messages tab, and you can reread the win memory from the quest book.",
             buttonTitle: "Next",
             symbol: "photo.on.rectangle.angled"
         ),
@@ -45,16 +45,16 @@ struct OnboardingPage: Identifiable, Hashable {
             id: 4,
             headline: "A Little Birthday Love",
             subtitle: "Messages from your people.",
-            body: "Your friends left you a few birthday notes. Visit the Messages tab to read messages from Sharon, Mary, Sheba, Joey, Derek, and Anya. They're available whenever you want.",
+            body: "Sharon, Joey, Derek, Sheba, and Mary each left a note. Win their level to unlock it on the Messages tab. Locked notes stay visible so you can see who is still waiting.",
             buttonTitle: "Next",
             symbol: "envelope.fill"
         ),
         OnboardingPage(
             id: 5,
-            headline: "Ready to Play?",
+            headline: "Ready for Rocco's Quest?",
             subtitle: "Your birthday. Your quest.",
-            body: "Start on the Quest tab. Win the levels in order, collect the photos on Birthday Dex, and open Messages whenever you want a note.",
-            buttonTitle: "Start My Adventure",
+            body: "Start on the Quest tab and win the levels in order. Each win unlocks that level’s photo album and a birthday message. Open Birthday Dex to browse the albums, and Messages to read the notes you’ve unlocked.",
+            buttonTitle: "Start Rocco's Quest",
             symbol: "flag.fill"
         ),
     ]
@@ -81,8 +81,9 @@ struct OnboardingView: View {
             if !reduceMotion && page == 0 { ConfettiBurst().opacity(0.35).ignoresSafeArea() }
 
             VStack(spacing: 16) {
+                if isReplay { topBar }
                 progressDots
-                    .padding(.top, 8)
+                    .padding(.top, isReplay ? 0 : 8)
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("Page \(page + 1) of \(pages.count)")
 
@@ -109,6 +110,25 @@ struct OnboardingView: View {
                 savedPage = value
             }
         }
+    }
+
+    private var topBar: some View {
+        HStack {
+            if isReplay {
+                Text("How to Play")
+                    .font(.system(.headline, design: .rounded, weight: .bold))
+                    .foregroundStyle(Color.birthdayPurple)
+            }
+            Spacer()
+            if isReplay {
+                Button("Exit") { finish() }
+                    .font(.system(.headline, design: .rounded, weight: .semibold))
+                    .accessibilityLabel("Exit how to play")
+            }
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 12)
+        .frame(minHeight: 44)
     }
 
     private var progressDots: some View {
@@ -159,14 +179,20 @@ struct OnboardingView: View {
                 .controlSize(.large)
                 .accessibilityLabel("Back")
             }
-            Button(current.buttonTitle) {
+            Button(primaryButtonTitle) {
                 advance()
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
             .frame(maxWidth: .infinity)
-            .accessibilityLabel(current.buttonTitle)
+            .accessibilityLabel(primaryButtonTitle)
         }
+    }
+
+    private var primaryButtonTitle: String {
+        if isReplay, page == pages.count - 1 { return "Done" }
+        if isReplay, page == 0 { return "Next" }
+        return current.buttonTitle
     }
 
     private func advance() {

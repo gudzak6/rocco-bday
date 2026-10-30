@@ -5,14 +5,14 @@ final class BirthdayGOUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments = ["-ui-testing-onboarding"]
         app.launch()
-        XCTAssertTrue(app.staticTexts["A Birthday Adventure Awaits!"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["Open Your Gift"].exists)
+        XCTAssertTrue(app.staticTexts["Rocco's Quest"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Let's Go"].exists)
         XCTAssertFalse(app.tabBars.buttons["Quest"].exists)
-        app.buttons["Open Your Gift"].tap()
+        app.buttons["Let's Go"].tap()
         XCTAssertTrue(app.staticTexts["Play the Quest"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["Back"].exists)
         app.buttons["Back"].tap()
-        XCTAssertTrue(app.staticTexts["A Birthday Adventure Awaits!"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.staticTexts["Rocco's Quest"].waitForExistence(timeout: 3))
     }
 
     func testInvitationScreenIsAccessible() {
@@ -40,7 +40,8 @@ final class BirthdayGOUITests: XCTestCase {
         app.tabBars.buttons["Messages"].tap()
         XCTAssertTrue(app.staticTexts["Birthday Messages"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.staticTexts["Sharon"].exists)
-        XCTAssertTrue(app.staticTexts["Anya"].exists)
+        XCTAssertTrue(app.staticTexts["Mary"].exists)
+        XCTAssertFalse(app.staticTexts["Anya"].exists)
         app.tabBars.buttons["Me"].tap()
         XCTAssertTrue(app.staticTexts["Happy Birthday Rocco"].waitForExistence(timeout: 3))
         let running = app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'Running'")).firstMatch

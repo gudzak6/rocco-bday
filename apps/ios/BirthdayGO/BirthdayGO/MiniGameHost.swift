@@ -14,18 +14,32 @@ struct QuestSpriteView: UIViewRepresentable {
     }
 
     func updateUIView(_ view: SKView, context: Context) {
-        if view.scene !== scene {
-            scene.isPaused = false
-            view.presentScene(scene)
-        }
-        view.isPaused = false
+        guard view.scene !== scene else { return }
         scene.isPaused = false
+        view.presentScene(scene)
+        view.isPaused = false
+    }
+}
+
+private struct ArcadeHUDPoller: View {
+    let isPlaying: Bool
+    let onTick: () -> Void
+    @State private var ticker = Timer.publish(every: 0.12, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        Color.clear
+            .accessibilityHidden(true)
+            .onReceive(ticker) { _ in
+                guard isPlaying else { return }
+                onTick()
+            }
     }
 }
 
 struct ArcadeScreen<S: SKScene>: View {
-    @ObservedObject var session: QuestSession
+    let session: QuestSession
     let scene: S
+    let phase: QuestPhase
     let primary: (S) -> String
     let secondary: (S) -> String
     let lives: (S) -> Int?
@@ -35,19 +49,20 @@ struct ArcadeScreen<S: SKScene>: View {
     var body: some View {
         QuestSpriteView(scene: scene)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .onAppear { setRunning(scene, session.phase == .playing) }
-            .onChange(of: session.phase) { _, phase in
+            .onAppear { setRunning(scene, phase == .playing) }
+            .onChange(of: phase) { _, phase in
                 setRunning(scene, phase == .playing)
             }
-            .onReceive(Timer.publish(every: 0.12, on: .main, in: .common).autoconnect()) { _ in
-                guard session.phase == .playing else { return }
-                session.primary = primary(scene)
-                session.secondary = secondary(scene)
-                session.lives = lives(scene)
-                switch outcome(scene) {
-                case 1: session.succeed()
-                case 2: session.fail()
-                default: break
+            .background {
+                ArcadeHUDPoller(isPlaying: phase == .playing) {
+                    session.hud.primary = primary(scene)
+                    session.hud.secondary = secondary(scene)
+                    session.hud.lives = lives(scene)
+                    switch outcome(scene) {
+                    case 1: session.succeed()
+                    case 2: session.fail()
+                    default: break
+                    }
                 }
             }
     }
@@ -67,11 +82,10 @@ struct QuestPlayView: View {
             } else if session.phase == .ready {
                 readyCard
             } else {
-                stage
-                    .id(session.runID)
+                QuestStageHost(levelNumber: level.number, runID: session.runID, phase: session.phase, session: session)
                     .overlay(alignment: .top) {
                         if session.phase == .playing || session.phase == .paused {
-                            hud
+                            QuestPlayHUD(hud: session.hud) { session.pause() }
                         }
                     }
                 if session.phase == .countdown { countdownCard }
@@ -80,57 +94,30 @@ struct QuestPlayView: View {
             }
         }
         .background(Color.warmWhite.ignoresSafeArea())
+        .onAppear {
+            guard level.number == 1 else { return }
+            Task { @MainActor in
+                QuestAudio.shared.preloadLevel1()
+            }
+        }
         .onChange(of: session.phase) { _, phase in
             if phase == .won, !savedWin {
                 savedWin = true
                 onVictory()
+                if level.number == 1 { QuestAudio.shared.playWorldClear() }
             }
+            syncMusic(phase)
         }
+        .onDisappear { QuestAudio.shared.stopMusic() }
     }
 
-    @ViewBuilder
-    private var stage: some View {
-        switch level.number {
-        case 1: MarathonHost(session: session)
-        case 2: CookieHost(session: session)
-        case 3: ClimbingGame(session: session)
-        case 4: BoyfriendHost(session: session)
-        case 5: MazeHost(session: session)
-        case 6: LoyaltyGame(session: session)
-        case 7: TrainHost(session: session)
-        case 8: MemoryMatchGame(session: session)
-        case 9: BakeOffGame(session: session)
-        default: LegendaryGame(session: session)
+    private func syncMusic(_ phase: QuestPhase) {
+        guard (2...4).contains(level.number) else { return }
+        switch phase {
+        case .playing: QuestAudio.shared.startRetroWave()
+        case .paused: QuestAudio.shared.pauseMusic()
+        default: QuestAudio.shared.stopMusic()
         }
-    }
-
-    private var hud: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(session.primary).font(.system(.headline, design: .rounded, weight: .black))
-                Text(session.secondary).font(.caption.weight(.bold))
-            }
-            .padding(10)
-            .background(.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(.black, lineWidth: 3))
-            Spacer()
-            if let lives = session.lives {
-                Text(String(repeating: "♥", count: max(lives, 0)))
-                    .font(.headline)
-                    .foregroundStyle(.pink)
-                    .padding(10)
-                    .background(.white.opacity(0.92), in: Capsule())
-            }
-            Button { session.pause() } label: {
-                Image(systemName: "pause.fill")
-                    .padding(12)
-                    .background(.white, in: Circle())
-                    .overlay(Circle().stroke(.black, lineWidth: 3))
-            }
-            .accessibilityLabel("Pause")
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
     }
 
     private var readyCard: some View {
@@ -184,32 +171,91 @@ struct QuestPlayView: View {
     }
 }
 
+private struct QuestPlayHUD: View {
+    @ObservedObject var hud: QuestHUD
+    let onPause: () -> Void
+
+    var body: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(hud.primary).font(.system(.headline, design: .rounded, weight: .black))
+                Text(hud.secondary).font(.caption.weight(.bold))
+            }
+            .padding(10)
+            .background(.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 12))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(.black, lineWidth: 3))
+            Spacer()
+            if let lives = hud.lives {
+                Text(String(repeating: "♥", count: max(lives, 0)))
+                    .font(.headline)
+                    .foregroundStyle(.pink)
+                    .padding(10)
+                    .background(.white.opacity(0.92), in: Capsule())
+            }
+            Button(action: onPause) {
+                Image(systemName: "pause.fill")
+                    .padding(12)
+                    .background(.white, in: Circle())
+                    .overlay(Circle().stroke(.black, lineWidth: 3))
+            }
+            .accessibilityLabel("Pause")
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+    }
+}
+
+private struct QuestStageHost: View {
+    let levelNumber: Int
+    let runID: UUID
+    let phase: QuestPhase
+    let session: QuestSession
+
+    var body: some View {
+        Group {
+            switch levelNumber {
+            case 1: MarathonHost(session: session, phase: phase)
+            case 2: CookieHost(session: session, phase: phase)
+            case 3: ClimbingGame(session: session)
+            case 4: BoyfriendHost(session: session, phase: phase)
+            case 5: MemoryMatchGame(session: session)
+            case 6: BakeOffGame(session: session)
+            default: LegendaryGame(session: session)
+            }
+        }
+        .id(runID)
+    }
+}
+
 struct MarathonHost: View {
-    @ObservedObject var session: QuestSession
+    let session: QuestSession
+    let phase: QuestPhase
     @State private var scene = MarathonScene()
     var body: some View {
-        ArcadeScreen(session: session, scene: scene, primary: { "\($0.meters) m" }, secondary: { "Gels \($0.gels)/5" }, lives: { 3 - $0.hits }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
+        ArcadeScreen(session: session, scene: scene, phase: phase, primary: { "\($0.meters) m" }, secondary: { "Gels \($0.gels)/5" }, lives: { 3 - $0.hits }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
             .ignoresSafeArea()
     }
 }
 
 struct CookieHost: View {
-    @ObservedObject var session: QuestSession
+    let session: QuestSession
+    let phase: QuestPhase
     @State private var scene = CookieChaosScene()
     var body: some View {
-        ArcadeScreen(session: session, scene: scene, primary: { "Cookies \($0.cookies)/20" }, secondary: { "Combo \($0.combo)" }, lives: { 3 - $0.bad }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
+        ArcadeScreen(session: session, scene: scene, phase: phase, primary: { "Cookies \($0.cookies)/20" }, secondary: { "Combo \($0.combo)" }, lives: { 3 - $0.bad }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
             .ignoresSafeArea()
     }
 }
 
 struct BoyfriendHost: View {
-    @ObservedObject var session: QuestSession
+    let session: QuestSession
+    let phase: QuestPhase
     @State private var scene = BoyfriendScene()
     var body: some View {
-        ArcadeScreen(session: session, scene: scene, primary: { "Hearts \($0.hearts)/10" }, secondary: { $0.hint }, lives: { 3 - $0.hits }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
+        ArcadeScreen(session: session, scene: scene, phase: phase, primary: { "Hearts \($0.hearts)/10" }, secondary: { $0.hint }, lives: { 3 - $0.hits }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
             .ignoresSafeArea()
             .overlay(alignment: .bottom) {
-                if session.phase == .playing {
+                if phase == .playing {
                     HStack(spacing: 12) {
                         holdButton("arrow.left") { scene.inputX = $0 ? -1 : 0 }
                         Button { scene.jumpQueued = true } label: {
@@ -240,44 +286,3 @@ struct BoyfriendHost: View {
     }
 }
 
-struct MazeHost: View {
-    @ObservedObject var session: QuestSession
-    @State private var scene = GamerMazeScene()
-    var body: some View {
-        ArcadeScreen(session: session, scene: scene, primary: { "Controllers \($0.found)/5" }, secondary: { _ in "Find the exit" }, lives: { 3 - $0.hits }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
-            .ignoresSafeArea()
-            .overlay(alignment: .bottom) {
-                if session.phase == .playing {
-                    VStack(spacing: 6) {
-                        padButton("arrow.up") { scene.move(dx: 0, dy: -1) }
-                        HStack(spacing: 28) {
-                            padButton("arrow.left") { scene.move(dx: -1, dy: 0) }
-                            padButton("arrow.right") { scene.move(dx: 1, dy: 0) }
-                        }
-                        padButton("arrow.down") { scene.move(dx: 0, dy: 1) }
-                    }
-                    .padding(.bottom, 16)
-                }
-            }
-    }
-
-    private func padButton(_ symbol: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: symbol)
-                .font(.title3.weight(.black))
-                .frame(width: 54, height: 44)
-                .background(.white, in: RoundedRectangle(cornerRadius: 10))
-                .overlay(RoundedRectangle(cornerRadius: 10).stroke(.black, lineWidth: 3))
-        }
-        .buttonStyle(.plain)
-    }
-}
-
-struct TrainHost: View {
-    @ObservedObject var session: QuestSession
-    @State private var scene = TrainScene()
-    var body: some View {
-        ArcadeScreen(session: session, scene: scene, primary: { "\($0.meters) m" }, secondary: { "Tickets \($0.tickets)/8" }, lives: { 3 - $0.hits }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
-            .ignoresSafeArea()
-    }
-}

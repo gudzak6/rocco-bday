@@ -10,7 +10,7 @@ struct QuestMapView: View {
             GeometryReader { geo in
                 ScrollView(.horizontal, showsIndicators: false) {
                     map(in: geo.size)
-                        .frame(width: 2480, height: geo.size.height)
+                        .frame(width: 150 + CGFloat(QuestRules.levelCount - 1) * 230 + 180, height: geo.size.height)
                 }
             }
             .background(mapSky)
@@ -47,12 +47,12 @@ struct QuestMapView: View {
     private var footer: String {
         let done = progress.completed.count
         if done == 0 { return "Level 1 is open. Clear it to light the next flag." }
-        if done >= 10 { return "Every flag is lit. The book is full." }
-        return "\(done) of 10 flags lit. Level \(QuestRules.currentLevel(completed: progress.completed)) is next."
+        if done >= QuestRules.levelCount { return "Every flag is lit. The book is full." }
+        return "\(done) of \(QuestRules.levelCount) flags lit. Level \(QuestRules.currentLevel(completed: progress.completed)) is next."
     }
 
     private func map(in size: CGSize) -> some View {
-        let spots = (1...10).map { point($0, height: size.height) }
+        let spots = QuestRules.levelRange.map { point($0, height: size.height) }
         return ZStack(alignment: .topLeading) {
             hills(height: size.height)
             path(spots)
@@ -330,20 +330,148 @@ struct QuestMemoryBook: View {
 
 struct BirthdayDexView: View {
     @EnvironmentObject private var progress: QuestProgress
-    @State private var selection: UUID?
-
-    private var photos: [PhotoDrop] {
-        let byName = Dictionary(uniqueKeysWithValues: PhotoDropCatalog.drops().map { ($0.filename, $0) })
-        return progress.unlockedPhotos.compactMap { byName[$0] }
-    }
 
     private var remaining: Int {
-        max(PhotoDropCatalog.drops().count - photos.count, 0)
+        max(PhotoDropCatalog.drops().count - progress.unlockedPhotos.count, 0)
     }
 
     private var remainingLabel: String {
         remaining == 1 ? "1 photo left to unlock" : "\(remaining) photos left to unlock"
     }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(remainingLabel)
+                        .font(.system(.headline, design: .rounded, weight: .bold))
+                        .padding(.horizontal)
+                    Text("Each album is a level. Win the flag to open its photos.")
+                        .font(.system(.subheadline, design: .rounded))
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal)
+                    LazyVStack(spacing: 12) {
+                        ForEach(QuestCatalog.levels) { level in
+                            albumCard(for: level)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                }
+                .padding(.vertical)
+            }
+            .background(Color.warmWhite)
+            .navigationTitle("Birthday Dex")
+        }
+    }
+
+    @ViewBuilder
+    private func albumCard(for level: QuestLevel) -> some View {
+        let photos = photos(for: level)
+        let isOpen = progress.completed.contains(level.number)
+        if isOpen {
+            NavigationLink {
+                BirthdayDexAlbumView(level: level, photos: photos)
+            } label: {
+                DexAlbumCard(level: level, photos: photos, isOpen: true)
+            }
+            .buttonStyle(.plain)
+        } else {
+            DexAlbumCard(level: level, photos: photos, isOpen: false)
+        }
+    }
+
+    private func photos(for level: QuestLevel) -> [PhotoDrop] {
+        let byName = Dictionary(uniqueKeysWithValues: PhotoDropCatalog.drops().map { ($0.filename, $0) })
+        return progress.photos(for: level.number).compactMap { byName[$0] }
+    }
+}
+
+private struct DexAlbumCard: View {
+    let level: QuestLevel
+    let photos: [PhotoDrop]
+    let isOpen: Bool
+
+    private var expectedCount: Int {
+        max(photos.count, QuestPhotoUnlocks.count(for: level.number, total: PhotoDropCatalog.drops().count))
+    }
+
+    private var subtitle: String {
+        if isOpen {
+            return photos.count == 1 ? "1 photo" : "\(photos.count) photos"
+        }
+        return expectedCount == 1 ? "1 photo waiting" : "\(expectedCount) photos waiting"
+    }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            DexAlbumCover(level: level, photos: photos, isOpen: isOpen)
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Level \(level.number)")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(level.accent)
+                Text(level.title)
+                    .font(.system(.title3, design: .rounded, weight: .bold))
+                    .foregroundStyle(.primary)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.85)
+                    .multilineTextAlignment(.leading)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            Image(systemName: isOpen ? "chevron.right" : "lock.fill")
+                .font(.headline.weight(.semibold))
+                .foregroundStyle(isOpen ? Color.secondary : level.accent.opacity(0.7))
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(.white, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(level.accent.opacity(isOpen ? 0.45 : 0.18), lineWidth: 2)
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibilityText)
+        .accessibilityAddTraits(isOpen ? .isButton : [])
+    }
+
+    private var accessibilityText: String {
+        if isOpen {
+            return "Level \(level.number) \(level.title) album, \(subtitle)"
+        }
+        return "Level \(level.number) \(level.title) album, locked. Win this level to open it."
+    }
+}
+
+private struct DexAlbumCover: View {
+    let level: QuestLevel
+    let photos: [PhotoDrop]
+    let isOpen: Bool
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(level.accent.opacity(isOpen ? 0.9 : 0.4))
+            if isOpen, let name = photos.first?.filename, let image = PhotoDropImage.cover(filename: name) {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFill()
+            } else {
+                Image(systemName: isOpen ? "photo.on.rectangle.angled" : "lock.fill")
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(.white)
+            }
+        }
+        .frame(width: 84, height: 84)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+private struct BirthdayDexAlbumView: View {
+    let level: QuestLevel
+    let photos: [PhotoDrop]
+    @State private var selection: UUID?
 
     private var selectedID: UUID? {
         if let selection, photos.contains(where: { $0.id == selection }) { return selection }
@@ -356,44 +484,48 @@ struct BirthdayDexView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 16) {
-                if photos.isEmpty {
-                    Spacer()
-                    Text("Win a level and photos from the adventure show up here.")
-                        .font(.system(.body, design: .rounded))
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-                    Spacer()
-                } else {
-                    GeometryReader { geo in
-                        ScrollView(.horizontal) {
-                            LazyHStack(spacing: 0) {
-                                ForEach(photos) { drop in
-                                    carouselPage(drop, size: geo.size)
-                                        .frame(width: geo.size.width, height: geo.size.height)
-                                        .id(drop.id)
-                                }
+        VStack(spacing: 16) {
+            Text(level.theme)
+                .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                .foregroundStyle(level.accent)
+            if photos.isEmpty {
+                Spacer()
+                Text("This album is open, and photos will land here.")
+                    .font(.system(.body, design: .rounded))
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+                Spacer()
+            } else {
+                GeometryReader { geo in
+                    ScrollView(.horizontal) {
+                        LazyHStack(spacing: 0) {
+                            ForEach(photos) { drop in
+                                carouselPage(drop, size: geo.size)
+                                    .frame(width: geo.size.width, height: geo.size.height)
+                                    .id(drop.id)
                             }
-                            .scrollTargetLayout()
                         }
-                        .scrollTargetBehavior(.paging)
-                        .scrollPosition(id: $selection)
-                        .scrollIndicators(.hidden)
+                        .scrollTargetLayout()
                     }
-                    Text(pageLabel)
-                        .font(.system(.subheadline, design: .rounded, weight: .semibold))
-                        .foregroundStyle(.secondary)
-                        .accessibilityLabel("Photo \(pageLabel)")
+                    .scrollTargetBehavior(.paging)
+                    .scrollPosition(id: $selection)
+                    .scrollIndicators(.hidden)
                 }
-                Text(remainingLabel)
-                    .font(.system(.headline, design: .rounded, weight: .bold))
-                    .padding(.bottom, 12)
+                Text(pageLabel)
+                    .font(.system(.subheadline, design: .rounded, weight: .semibold))
+                    .foregroundStyle(.secondary)
+                    .accessibilityLabel("Photo \(pageLabel)")
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.warmWhite)
-            .navigationTitle("Birthday Dex")
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.warmWhite)
+        .navigationTitle(level.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            if selection == nil {
+                selection = photos.first?.id
+            }
         }
     }
 
@@ -408,6 +540,6 @@ struct BirthdayDexView: View {
             }
         }
         .frame(width: size.width, height: size.height)
-        .accessibilityLabel("Unlocked photo")
+        .accessibilityLabel("Photo from \(level.title)")
     }
 }

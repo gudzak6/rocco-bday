@@ -303,7 +303,15 @@ private struct DetailRow: View {
 }
 
 struct MemoryBookView: View {
-    @State private var messages = BirthdayMessages.all
+    @EnvironmentObject private var progress: QuestProgress
+
+    private var messages: [BirthdayFriendMessage] {
+        BirthdayMessages.all.sorted { $0.unlockLevel < $1.unlockLevel }
+    }
+
+    private var unlockedCount: Int {
+        messages.filter { $0.isUnlocked(completed: progress.completed) }.count
+    }
 
     var body: some View {
         NavigationStack {
@@ -312,19 +320,34 @@ struct MemoryBookView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Birthday Messages")
                             .font(.system(.largeTitle, design: .rounded, weight: .bold))
-                        Text("A little birthday love from your friends")
+                        Text("Win a level to unlock that friend’s note.")
                             .font(.system(.title3, design: .rounded))
                             .foregroundStyle(.secondary)
+                        Text("\(unlockedCount) of \(messages.count) unlocked")
+                            .font(.system(.headline, design: .rounded, weight: .bold))
                     }
                     .padding(.horizontal)
 
                     ForEach(Array(messages.enumerated()), id: \.element.id) { index, message in
-                        NavigationLink {
-                            BirthdayMessageDetailView(message: message)
-                        } label: {
-                            BirthdayMessageRow(message: message, color: BirthdayMessages.avatarColor(at: index))
+                        let unlocked = message.isUnlocked(completed: progress.completed)
+                        if unlocked {
+                            NavigationLink {
+                                BirthdayMessageDetailView(message: message)
+                            } label: {
+                                BirthdayMessageRow(
+                                    message: message,
+                                    color: BirthdayMessages.avatarColor(at: index),
+                                    isUnlocked: true
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        } else {
+                            BirthdayMessageRow(
+                                message: message,
+                                color: BirthdayMessages.avatarColor(at: index),
+                                isUnlocked: false
+                            )
                         }
-                        .buttonStyle(.plain)
                     }
                 }
                 .padding(.vertical)
@@ -332,7 +355,6 @@ struct MemoryBookView: View {
             .background(Color.warmWhite)
             .navigationTitle("Birthday Messages")
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear { messages = BirthdayMessages.all }
         }
     }
 }
@@ -340,30 +362,51 @@ struct MemoryBookView: View {
 private struct BirthdayMessageRow: View {
     let message: BirthdayFriendMessage
     let color: Color
+    var isUnlocked = true
+
+    private var unlockHint: String {
+        let level = QuestCatalog.level(message.unlockLevel)
+        return "Win Level \(level.number) · \(level.title)"
+    }
 
     var body: some View {
         HStack(spacing: 14) {
-            Text(message.initial)
-                .font(.system(.title3, design: .rounded, weight: .black))
-                .foregroundStyle(.white)
-                .frame(width: 48, height: 48)
-                .background(color, in: Circle())
-                .accessibilityHidden(true)
-            Text(message.senderName)
-                .font(.system(.title3, design: .rounded, weight: .bold))
-                .foregroundStyle(.primary)
+            ZStack {
+                Text(message.initial)
+                    .font(.system(.title3, design: .rounded, weight: .black))
+                    .foregroundStyle(.white)
+                    .frame(width: 48, height: 48)
+                    .background(color.opacity(isUnlocked ? 1 : 0.35), in: Circle())
+                if !isUnlocked {
+                    Image(systemName: "lock.fill")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.white)
+                        .offset(x: 16, y: 16)
+                }
+            }
+            .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(message.senderName)
+                    .font(.system(.title3, design: .rounded, weight: .bold))
+                    .foregroundStyle(.primary)
+                if !isUnlocked {
+                    Text(unlockHint)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
             Spacer()
-            Image(systemName: "chevron.right")
+            Image(systemName: isUnlocked ? "chevron.right" : "lock.fill")
                 .font(.headline.weight(.semibold))
                 .foregroundStyle(.tertiary)
         }
         .padding(16)
         .background(.white, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .shadow(color: color.opacity(0.18), radius: 10, y: 4)
+        .shadow(color: color.opacity(isUnlocked ? 0.18 : 0.08), radius: 10, y: 4)
         .padding(.horizontal)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel(message.senderName)
-        .accessibilityHint("Opens this birthday message")
+        .accessibilityLabel(isUnlocked ? message.senderName : "\(message.senderName), locked. \(unlockHint)")
+        .accessibilityHint(isUnlocked ? "Opens this birthday message" : "Win this level to unlock the note")
     }
 }
 

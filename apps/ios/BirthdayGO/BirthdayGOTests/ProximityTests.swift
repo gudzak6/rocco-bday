@@ -179,7 +179,7 @@ struct MapRevealTests {
     @Test func photoDropsStayNearManhattanStops() {
         let first = PhotoDropCatalog.makeDrops(filenames: ["IMG_0009.jpg"])[0]
         let again = PhotoDropCatalog.makeDrops(filenames: ["IMG_0009.jpg"])[0]
-        let other = PhotoDropCatalog.makeDrops(filenames: ["IMG_0194.jpg"])[0]
+        let other = PhotoDropCatalog.makeDrops(filenames: ["IMG_1618.jpg"])[0]
         #expect(first.id == again.id)
         #expect(first.latitude == again.latitude)
         #expect(first.longitude == again.longitude)
@@ -213,7 +213,7 @@ struct MapRevealTests {
 
     @Test func bundledPhotosLoadOnce() {
         let drops = PhotoDropCatalog.drops()
-        #expect(drops.count == 40)
+        #expect(drops.count == 15)
         #expect(!drops.contains { $0.filename == "000094970013.jpg" })
         #expect(!drops.contains { $0.filename == "000041920016.jpg" })
         #expect(!drops.contains { $0.filename == "000041920006.jpg" })
@@ -226,28 +226,46 @@ struct OnboardingTests {
     @Test func hasSixHowToPlayScreens() {
         #expect(OnboardingPage.all.count == 6)
         #expect(OnboardingPage.all.map(\.headline) == [
-            "A Birthday Adventure Awaits!",
+            "Rocco's Quest",
             "Play the Quest",
             "Win the Mini-Games",
-            "Unlock Photos",
+            "Photos & Memories",
             "A Little Birthday Love",
-            "Ready to Play?",
+            "Ready for Rocco's Quest?",
         ])
-        #expect(OnboardingPage.all.last?.buttonTitle == "Start My Adventure")
+        #expect(OnboardingPage.all[3].body.contains("set of photos"))
+        #expect(OnboardingPage.all[3].body.contains("memory"))
+        #expect(OnboardingPage.all.last?.buttonTitle == "Start Rocco's Quest")
     }
 }
 
 struct BirthdayMessagesTests {
     @Test func listsFriendsInOrder() {
-        #expect(BirthdayMessages.all.map(\.senderName) == ["Sharon", "Mary", "Sheba", "Joey", "Derek", "Anya"])
-        #expect(Set(BirthdayMessages.all.map(\.id)).count == 6)
+        #expect(BirthdayMessages.all.map(\.senderName) == ["Sharon", "Mary", "Sheba", "Joey", "Derek"])
+        #expect(Set(BirthdayMessages.all.map(\.id)).count == 5)
         #expect(BirthdayMessages.all.first { $0.senderName == "Mary" }?.body.contains("chip city closing") == true)
         #expect(BirthdayMessages.all.first { $0.senderName == "Sheba" }?.body.contains("yap session") == true)
         #expect(BirthdayMessages.all.first { $0.senderName == "Sharon" }?.body == "HAPPY BIRTHDAY ROCCO!!")
         #expect(BirthdayMessages.all.first { $0.senderName == "Derek" }?.body.contains("jets win") == true)
         #expect(BirthdayMessages.all.first { $0.senderName == "Joey" }?.body.contains("cookies and sweet treats") == true)
         let waiting = Set(BirthdayMessages.all.filter { $0.body.contains("[REPLACE]") }.map(\.senderName))
-        #expect(waiting == ["Anya"])
+        #expect(waiting.isEmpty)
+    }
+
+    @Test func eachFriendUnlocksOnADifferentLevel() {
+        let byName = Dictionary(uniqueKeysWithValues: BirthdayMessages.all.map { ($0.senderName, $0.unlockLevel) })
+        #expect(byName == [
+            "Sharon": 1,
+            "Joey": 2,
+            "Derek": 3,
+            "Sheba": 4,
+            "Mary": 5,
+        ])
+        #expect(Set(BirthdayMessages.all.map(\.unlockLevel)) == Set(1...5))
+        let sharon = BirthdayMessages.all.first { $0.senderName == "Sharon" }!
+        #expect(!sharon.isUnlocked(completed: []))
+        #expect(sharon.isUnlocked(completed: [1]))
+        #expect(!sharon.isUnlocked(completed: [2, 3]))
     }
 }
 

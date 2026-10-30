@@ -22,6 +22,8 @@
 		642A7161BD29C84BA37F9AF4 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0D755897FEC3919FB0C5AE0 /* APIClient.swift */; };
 		934802BBCD7A6BBBE31E0A53 /* BirthdayGOApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87ACABFA7F6110EF1BC98937 /* BirthdayGOApp.swift */; };
 		97C0F574857DC3DFD46C7DC2 /* CatCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3FF85CCDC750E4A66D34F2A1 /* CatCatalog.swift */; };
+		A1C0FFEE00000000000000D1 /* PhotoDrops in Resources */ = {isa = PBXBuildFile; fileRef = A1C0FFEE00000000000000D2 /* PhotoDrops */; };
+		A1C0FFEE00000000000000D3 /* MapReveal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0FFEE00000000000000D4 /* MapReveal.swift */; };
 		A1E66CA7A10E4001B1DAE601 /* EggCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAE601 /* EggCatalog.swift */; };
 		A1E66CA7A10E4001B1DAE602 /* WalkTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAE602 /* WalkTracker.swift */; };
 		A1E66CA7A10E4001B1DAE603 /* EggPlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAE603 /* EggPlay.swift */; };
@@ -32,15 +34,15 @@
 		A1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift */; };
 		DCA8DC63FF1CC6581A36A6E3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 0D460DF451FB24297C37812A /* Assets.xcassets */; };
 		E91C1648D7D32E61A2A9C6BB /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 72915B7CBD767B8367687CF9 /* PrivacyInfo.xcprivacy */; };
-		A1C0FFEE00000000000000D1 /* PhotoDrops in Resources */ = {isa = PBXBuildFile; fileRef = A1C0FFEE00000000000000D2 /* PhotoDrops */; };
-		A1C0FFEE00000000000000D3 /* MapReveal.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C0FFEE00000000000000D4 /* MapReveal.swift */; };
+		FD5B4E154BD65F082D8588B4 /* CatchGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29D7B8D51554B5961BDE155C /* CatchGameView.swift */; };
 		QST0000000000000000000A2 /* QuestModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000A1 /* QuestModels.swift */; };
 		QST0000000000000000000B2 /* QuestMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000B1 /* QuestMapView.swift */; };
 		QST0000000000000000000C2 /* MiniGameHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000C1 /* MiniGameHost.swift */; };
 		QST0000000000000000000D2 /* QuestArcadeScenes.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000D1 /* QuestArcadeScenes.swift */; };
 		QST0000000000000000000E2 /* QuestBoardGames.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000E1 /* QuestBoardGames.swift */; };
 		QST0000000000000000000F2 /* QuestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000F1 /* QuestTests.swift */; };
-		FD5B4E154BD65F082D8588B4 /* CatchGameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29D7B8D51554B5961BDE155C /* CatchGameView.swift */; };
+		QST0000000000000000000G2 /* QuestAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000G1 /* QuestAudio.swift */; };
+		SND0000000000000000000A2 /* Sounds in Resources */ = {isa = PBXBuildFile; fileRef = SND0000000000000000000A1 /* Sounds */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -77,6 +79,8 @@
 		87ACABFA7F6110EF1BC98937 /* BirthdayGOApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayGOApp.swift; sourceTree = "<group>"; };
 		8F2B7D41C0E34A9B91A15520 /* BirthdayNotes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthdayNotes.swift; sourceTree = "<group>"; };
 		97765AAEF0EAE6FE8F7310D1 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		A1C0FFEE00000000000000D2 /* PhotoDrops */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PhotoDrops; sourceTree = "<group>"; };
+		A1C0FFEE00000000000000D4 /* MapReveal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapReveal.swift; sourceTree = "<group>"; };
 		A4AA2435750609ADF48A2E26 /* ProximityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProximityTests.swift; sourceTree = "<group>"; };
 		ACD9C92738D47C8D3D5EEBFD /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		B0D755897FEC3919FB0C5AE0 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
@@ -91,14 +95,14 @@
 		C1E66CA7A10E4001B1DAF703 /* MemoryMomentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MemoryMomentTests.swift; sourceTree = "<group>"; };
 		C1E66CA7A10E4001B1DAF801 /* TravelStopTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelStopTests.swift; sourceTree = "<group>"; };
 		E00E33456C419FD124C2BCB4 /* LibraryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryViews.swift; sourceTree = "<group>"; };
-		A1C0FFEE00000000000000D2 /* PhotoDrops */ = {isa = PBXFileReference; lastKnownFileType = folder; path = PhotoDrops; sourceTree = "<group>"; };
-		A1C0FFEE00000000000000D4 /* MapReveal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapReveal.swift; sourceTree = "<group>"; };
 		QST0000000000000000000A1 /* QuestModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestModels.swift; sourceTree = "<group>"; };
 		QST0000000000000000000B1 /* QuestMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestMapView.swift; sourceTree = "<group>"; };
 		QST0000000000000000000C1 /* MiniGameHost.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniGameHost.swift; sourceTree = "<group>"; };
 		QST0000000000000000000D1 /* QuestArcadeScenes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestArcadeScenes.swift; sourceTree = "<group>"; };
 		QST0000000000000000000E1 /* QuestBoardGames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestBoardGames.swift; sourceTree = "<group>"; };
 		QST0000000000000000000F1 /* QuestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestTests.swift; sourceTree = "<group>"; };
+		QST0000000000000000000G1 /* QuestAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestAudio.swift; sourceTree = "<group>"; };
+		SND0000000000000000000A1 /* Sounds */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Sounds; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -145,11 +149,13 @@
 				97765AAEF0EAE6FE8F7310D1 /* Models.swift */,
 				A1C0FFEE00000000000000D4 /* MapReveal.swift */,
 				QST0000000000000000000A1 /* QuestModels.swift */,
+				QST0000000000000000000G1 /* QuestAudio.swift */,
 				QST0000000000000000000B1 /* QuestMapView.swift */,
 				QST0000000000000000000C1 /* MiniGameHost.swift */,
 				QST0000000000000000000D1 /* QuestArcadeScenes.swift */,
 				QST0000000000000000000E1 /* QuestBoardGames.swift */,
 				A1C0FFEE00000000000000D2 /* PhotoDrops */,
+				SND0000000000000000000A1 /* Sounds */,
 				6B8F1A20C3E24C7D81D15540 /* OnboardingView.swift */,
 				72915B7CBD767B8367687CF9 /* PrivacyInfo.xcprivacy */,
 			);
@@ -287,6 +293,7 @@
 				DCA8DC63FF1CC6581A36A6E3 /* Assets.xcassets in Resources */,
 				E91C1648D7D32E61A2A9C6BB /* PrivacyInfo.xcprivacy in Resources */,
 				A1C0FFEE00000000000000D1 /* PhotoDrops in Resources */,
+				SND0000000000000000000A2 /* Sounds in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -337,6 +344,7 @@
 				36CAE3406F5ECC8433E52BCF /* Models.swift in Sources */,
 				A1C0FFEE00000000000000D3 /* MapReveal.swift in Sources */,
 				QST0000000000000000000A2 /* QuestModels.swift in Sources */,
+				QST0000000000000000000G2 /* QuestAudio.swift in Sources */,
 				QST0000000000000000000B2 /* QuestMapView.swift in Sources */,
 				QST0000000000000000000C2 /* MiniGameHost.swift in Sources */,
 				QST0000000000000000000D2 /* QuestArcadeScenes.swift in Sources */,
@@ -461,7 +469,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TUWBYL2SX9;
+				DEVELOPMENT_TEAM = 5V9JHSFDP8;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BirthdayGO/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -482,7 +490,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = TUWBYL2SX9;
+				DEVELOPMENT_TEAM = 5V9JHSFDP8;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BirthdayGO/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
