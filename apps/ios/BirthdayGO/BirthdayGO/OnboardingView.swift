@@ -13,7 +13,7 @@ struct OnboardingPage: Identifiable, Hashable {
             id: 0,
             headline: "Rocco's Quest",
             subtitle: "A birthday adventure made just for you.",
-            body: "Seven levels wait on the Quest map. Win them in order. Every win unlocks a set of photos in that level’s Birthday Dex album, plus a birthday message on the Messages tab.",
+            body: "Six levels wait on the Quest map. Win them in order. Every win unlocks a set of photos in that level’s Birthday Dex album, plus a birthday message on the Messages tab.",
             buttonTitle: "Let's Go",
             symbol: "flag.fill"
         ),
@@ -28,8 +28,8 @@ struct OnboardingPage: Identifiable, Hashable {
         OnboardingPage(
             id: 2,
             headline: "Win the Mini-Games",
-            subtitle: "Run, catch, climb, and bake.",
-            body: "Each flag is a short game about you: a marathon, cookies, a climbing wall, a race to the door, a matching game, a bake-off, and a last castle. Lose a round and you can try that level again.",
+            subtitle: "Run, catch, race, and remember.",
+            body: "Each flag is a short game about you: a marathon, cookies, a race to the door, a matching game, four cards in order, and a maze chase. Lose a round and you can try that level again.",
             buttonTitle: "Next",
             symbol: "sparkles"
         ),

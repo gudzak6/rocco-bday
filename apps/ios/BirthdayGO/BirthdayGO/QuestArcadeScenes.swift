@@ -28,6 +28,8 @@ enum QuestPixel {
     }
 
     static func blip() { AudioServicesPlaySystemSound(1104) }
+    static func pop() { AudioServicesPlaySystemSound(1520) }
+    static func miss() { AudioServicesPlaySystemSound(1053) }
 }
 
 class QuestArcadeScene: SKScene {
@@ -306,9 +308,9 @@ final class BoyfriendScene: QuestArcadeScene {
     var inputX: CGFloat = 0
     var jumpQueued = false
     private var px: CGFloat = 80
-    private var py: CGFloat = 160
+    private var py: CGFloat = 142
     private var vy: CGFloat = 0
-    private var grounded = false
+    private var grounded = true
     private var invuln: CGFloat = 0
     private let world = SKNode()
     private let player = QuestPixel.rocco(shirt: UIColor(red: 0.95, green: 0.4, blue: 0.62, alpha: 1))
@@ -363,6 +365,7 @@ final class BoyfriendScene: QuestArcadeScene {
             enemies.append((patrol.0, patrol.1, patrol.2, patrol.3, 1, enemy))
         }
         world.addChild(player)
+        player.position = CGPoint(x: px, y: py)
     }
 
     override func update(_ currentTime: TimeInterval) {
@@ -374,8 +377,8 @@ final class BoyfriendScene: QuestArcadeScene {
         if jumpQueued && grounded {
             vy = 720
             grounded = false
+            jumpQueued = false
         }
-        jumpQueued = false
         vy -= 1650 * delta
         py += vy * delta
         grounded = false

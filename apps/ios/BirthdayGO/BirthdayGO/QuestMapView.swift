@@ -331,12 +331,22 @@ struct QuestMemoryBook: View {
 struct BirthdayDexView: View {
     @EnvironmentObject private var progress: QuestProgress
 
-    private var remaining: Int {
-        max(PhotoDropCatalog.drops().count - progress.unlockedPhotos.count, 0)
+    private var openPhotoCount: Int {
+        QuestCatalog.levels.reduce(0) { count, level in
+            guard progress.isUnlocked(level.number) else { return count }
+            return count + progress.photos(for: level.number).count
+        }
     }
 
     private var remainingLabel: String {
-        remaining == 1 ? "1 photo left to unlock" : "\(remaining) photos left to unlock"
+        let total = openPhotoCount
+        return total == 1 ? "1 photo" : "\(total) photos"
+    }
+
+    private var remainingDetail: String {
+        let left = PhotoDropCatalog.drops().count - openPhotoCount
+        if left <= 0 { return "Every album is open." }
+        return left == 1 ? "1 photo left to unlock" : "\(left) photos left to unlock"
     }
 
     var body: some View {
@@ -346,7 +356,7 @@ struct BirthdayDexView: View {
                     Text(remainingLabel)
                         .font(.system(.headline, design: .rounded, weight: .bold))
                         .padding(.horizontal)
-                    Text("Each album is a level. Win the flag to open its photos.")
+                    Text(remainingDetail)
                         .font(.system(.subheadline, design: .rounded))
                         .foregroundStyle(.secondary)
                         .padding(.horizontal)
@@ -366,9 +376,9 @@ struct BirthdayDexView: View {
 
     @ViewBuilder
     private func albumCard(for level: QuestLevel) -> some View {
+        let open = progress.isUnlocked(level.number)
         let photos = photos(for: level)
-        let isOpen = progress.completed.contains(level.number)
-        if isOpen {
+        if open {
             NavigationLink {
                 BirthdayDexAlbumView(level: level, photos: photos)
             } label: {
@@ -376,7 +386,7 @@ struct BirthdayDexView: View {
             }
             .buttonStyle(.plain)
         } else {
-            DexAlbumCard(level: level, photos: photos, isOpen: false)
+            DexAlbumCard(level: level, photos: [], isOpen: false)
         }
     }
 

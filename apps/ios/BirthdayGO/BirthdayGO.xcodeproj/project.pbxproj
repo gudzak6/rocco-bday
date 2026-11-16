@@ -42,6 +42,7 @@
 		QST0000000000000000000E2 /* QuestBoardGames.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000E1 /* QuestBoardGames.swift */; };
 		QST0000000000000000000F2 /* QuestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000F1 /* QuestTests.swift */; };
 		QST0000000000000000000G2 /* QuestAudio.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000G1 /* QuestAudio.swift */; };
+		QST0000000000000000000H2 /* MazeChase.swift in Sources */ = {isa = PBXBuildFile; fileRef = QST0000000000000000000H1 /* MazeChase.swift */; };
 		SND0000000000000000000A2 /* Sounds in Resources */ = {isa = PBXBuildFile; fileRef = SND0000000000000000000A1 /* Sounds */; };
 /* End PBXBuildFile section */
 
@@ -102,6 +103,7 @@
 		QST0000000000000000000E1 /* QuestBoardGames.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestBoardGames.swift; sourceTree = "<group>"; };
 		QST0000000000000000000F1 /* QuestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestTests.swift; sourceTree = "<group>"; };
 		QST0000000000000000000G1 /* QuestAudio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuestAudio.swift; sourceTree = "<group>"; };
+		QST0000000000000000000H1 /* MazeChase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MazeChase.swift; sourceTree = "<group>"; };
 		SND0000000000000000000A1 /* Sounds */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Sounds; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -154,6 +156,7 @@
 				QST0000000000000000000C1 /* MiniGameHost.swift */,
 				QST0000000000000000000D1 /* QuestArcadeScenes.swift */,
 				QST0000000000000000000E1 /* QuestBoardGames.swift */,
+				QST0000000000000000000H1 /* MazeChase.swift */,
 				A1C0FFEE00000000000000D2 /* PhotoDrops */,
 				SND0000000000000000000A1 /* Sounds */,
 				6B8F1A20C3E24C7D81D15540 /* OnboardingView.swift */,
@@ -349,6 +352,7 @@
 				QST0000000000000000000C2 /* MiniGameHost.swift in Sources */,
 				QST0000000000000000000D2 /* QuestArcadeScenes.swift in Sources */,
 				QST0000000000000000000E2 /* QuestBoardGames.swift in Sources */,
+				QST0000000000000000000H2 /* MazeChase.swift in Sources */,
 				5A7E2C19D4F14B8A90C26630 /* OnboardingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -469,7 +473,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5V9JHSFDP8;
+				DEVELOPMENT_TEAM = TUWBYL2SX9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BirthdayGO/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -490,7 +494,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 5V9JHSFDP8;
+				DEVELOPMENT_TEAM = TUWBYL2SX9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = BirthdayGO/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (

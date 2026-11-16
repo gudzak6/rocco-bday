@@ -36,6 +36,7 @@ final class GameStore: ObservableObject {
     private weak var walkTracker: WalkTracker?
 
     init() {
+        Self.prepareFreshPlayerIfNeeded()
         if let saved = UserDefaults.standard.string(forKey: "installationId"), let id = UUID(uuidString: saved) {
             installationId = id
         } else {
@@ -58,6 +59,7 @@ final class GameStore: ObservableObject {
     }
 
     func launch() async {
+        clearFreshPlayerStoreIfNeeded()
         #if DEBUG
         if ProcessInfo.processInfo.arguments.contains("-ui-testing-ready") {
             snapshot = mergedSnapshot(.uiTest)
@@ -159,6 +161,49 @@ final class GameStore: ObservableObject {
     func acknowledgeWelcome() {
         hasSeenWelcome = true
         UserDefaults.standard.set(true, forKey: "hasSeenWelcome")
+    }
+
+    private static func prepareFreshPlayerIfNeeded() {
+        let epochKey = "freshPlayerEpoch"
+        guard UserDefaults.standard.integer(forKey: epochKey) < 1 else { return }
+        let defaults = UserDefaults.standard
+        for key in [
+            "roccoQuest.completedLevels",
+            "roccoQuest.photosByLevel",
+            "hasSeenWelcome",
+            "onboardingPage",
+            "installationId",
+            "pendingProgress",
+            "avatarColor",
+            "friendDexReset",
+            "developerMode",
+            "showHiddenMapItems",
+            "discoveredMapMarkerIds",
+            "memoryStopProximityOverride",
+            "eggPedometerAnchor",
+            "eggPedometerCredited",
+        ] {
+            defaults.removeObject(forKey: key)
+        }
+        KeychainStore.delete("playerAccessToken")
+        defaults.set(true, forKey: "freshPlayerClearStore")
+        defaults.set(1, forKey: epochKey)
+    }
+
+    private func clearFreshPlayerStoreIfNeeded() {
+        guard UserDefaults.standard.bool(forKey: "freshPlayerClearStore"), let context = modelContext else { return }
+        func wipe<T: PersistentModel>(_ type: T.Type) {
+            (try? context.fetch(FetchDescriptor<T>()))?.forEach { context.delete($0) }
+        }
+        wipe(CachedSnapshot.self)
+        wipe(CapturedCreature.self)
+        wipe(CollectedSouvenir.self)
+        wipe(AwardedCheckpoint.self)
+        wipe(NotePreference.self)
+        wipe(LocalPassportStamp.self)
+        wipe(PlayerEggRecord.self)
+        try? context.save()
+        UserDefaults.standard.set(false, forKey: "freshPlayerClearStore")
     }
 
     private let onboardingEpoch = 1

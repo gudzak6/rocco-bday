@@ -1,80 +1,5 @@
 import SwiftUI
 
-struct ClimbingGame: View {
-    @ObservedObject var session: QuestSession
-    @State private var current = 0
-    @State private var mistakes = 0
-
-    private let holds: [(id: Int, x: CGFloat, y: CGFloat, unstable: Bool)] = [
-        (0, 0.50, 0.08, false),
-        (1, 0.30, 0.20, false),
-        (2, 0.72, 0.22, true),
-        (3, 0.48, 0.33, false),
-        (4, 0.24, 0.44, false),
-        (5, 0.66, 0.46, true),
-        (6, 0.42, 0.58, false),
-        (7, 0.70, 0.68, false),
-        (8, 0.34, 0.76, false),
-        (9, 0.55, 0.88, false),
-    ]
-
-    var body: some View {
-        GeometryReader { geo in
-            ZStack {
-                LinearGradient(colors: [Color.mint.opacity(0.35), Color.warmWhite], startPoint: .top, endPoint: .bottom)
-                RoundedRectangle(cornerRadius: 28)
-                    .fill(Color(red: 0.55, green: 0.62, blue: 0.7))
-                    .padding(.horizontal, 36)
-                    .padding(.vertical, 24)
-                    .overlay(RoundedRectangle(cornerRadius: 28).stroke(.black, lineWidth: 4).padding(.horizontal, 36).padding(.vertical, 24))
-                ForEach(holds, id: \.id) { hold in
-                    holdView(hold, in: geo.size)
-                        .position(x: 36 + hold.x * (geo.size.width - 72), y: geo.size.height - 40 - hold.y * (geo.size.height - 80))
-                }
-            }
-        }
-        .onAppear { publish() }
-        .onChange(of: session.phase) { _, _ in publish() }
-    }
-
-    private func holdView(_ hold: (id: Int, x: CGFloat, y: CGFloat, unstable: Bool), in size: CGSize) -> some View {
-        let reachable = isReachable(hold.id)
-        return Button {
-            guard session.phase == .playing else { return }
-            if reachable && !hold.unstable {
-                current = hold.id
-                if hold.id == holds.last?.id { session.succeed() }
-            } else {
-                mistakes += 1
-                if mistakes >= 3 { session.fail() }
-            }
-            publish()
-        } label: {
-            Circle()
-                .fill(hold.id == current ? Color.golden : (reachable ? Color.mint : Color.white.opacity(0.8)))
-                .frame(width: hold.id == current ? 36 : 28, height: hold.id == current ? 36 : 28)
-                .overlay(Circle().stroke(.black, lineWidth: 3))
-                .shadow(color: reachable && session.phase == .playing ? Color.mint : .clear, radius: 6)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(reachable ? "Reachable hold" : "Hold")
-    }
-
-    private func isReachable(_ id: Int) -> Bool {
-        guard let hold = holds.first(where: { $0.id == id }), let here = holds.first(where: { $0.id == current }) else { return false }
-        let dx = hold.x - here.x
-        let dy = hold.y - here.y
-        return id != current && dy > -0.02 && hypot(dx, dy) < 0.28
-    }
-
-    private func publish() {
-        guard session.phase == .playing || session.phase == .ready else { return }
-        session.hud.primary = "Climb"
-        session.hud.secondary = "Reach the gold top"
-        session.hud.lives = 3 - mistakes
-    }
-}
-
 struct MemoryMatchGame: View {
     @ObservedObject var session: QuestSession
     @State private var cards: [MatchCard] = MatchCard.deck()
@@ -117,8 +42,10 @@ struct MemoryMatchGame: View {
                 cards[first].matched = true
                 cards[index].matched = true
                 self.first = nil
+                QuestPixel.pop()
                 if cards.allSatisfy(\.matched) { session.succeed() }
             } else {
+                QuestPixel.miss()
                 lock = true
                 let previous = first
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
@@ -130,6 +57,7 @@ struct MemoryMatchGame: View {
             }
         } else {
             first = index
+            QuestPixel.blip()
         }
         publish()
     }
@@ -156,277 +84,151 @@ struct MatchCard: Identifiable {
     }
 }
 
-struct BakeOffGame: View {
+struct OrderMemoryGame: View {
     @ObservedObject var session: QuestSession
-    private let recipe = ["Cake", "Frosting", "Cookie", "Candle", "Cake", "Frosting", "Cookie", "Candle"]
+    private let cards: [(name: String, symbol: String)] = [
+        ("Cookie", "birthday.cake.fill"),
+        ("Flowers", "camera.macro"),
+        ("Note", "envelope.fill"),
+        ("Song", "music.note"),
+    ]
+    private let goal = 6
+    @State private var sequence: [Int] = []
     @State private var step = 0
-    @State private var wobble = false
+    @State private var misses = 0
+    @State private var lit: Int?
+    @State private var inputOn = false
+    @State private var ended = false
+    @State private var prompt = "Watch the order"
+    @State private var ticket = UUID()
 
     var body: some View {
-        VStack(spacing: 18) {
-            Text(step < recipe.count ? "Next: \(recipe[step])" : "Cake complete")
+        VStack(spacing: 22) {
+            Text(prompt)
                 .font(.system(.title3, design: .rounded, weight: .black))
-            ZStack {
-                RoundedRectangle(cornerRadius: 18).fill(Color.white).frame(height: 220)
-                    .overlay(RoundedRectangle(cornerRadius: 18).stroke(.black, lineWidth: 3))
-                VStack(spacing: 4) {
-                    ForEach(Array(recipe.prefix(step).enumerated()), id: \.offset) { _, item in
-                        Text(item)
-                            .font(.caption.weight(.black))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(color(item), in: Capsule())
-                    }
+            LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
+                ForEach(cards.indices, id: \.self) { index in
+                    card(index)
                 }
-                .offset(x: wobble ? 10 : 0)
             }
             .padding(.horizontal, 28)
-            HStack(spacing: 10) {
-                ForEach(["Cake", "Frosting", "Cookie", "Candle"], id: \.self) { item in
-                    Text(item)
-                        .font(.caption.weight(.black))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(color(item), in: RoundedRectangle(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(.black, lineWidth: 3))
-                        .draggable(item) {
-                            Text(item).padding().background(.white, in: RoundedRectangle(cornerRadius: 8))
-                        }
-                }
-            }
-            .padding(.horizontal, 16)
-            Color.clear.frame(height: 80)
-                .overlay(Text("Drop the next ingredient here").font(.caption.weight(.bold)))
-                .dropDestination(for: String.self) { items, _ in
-                    guard session.phase == .playing, let item = items.first else { return false }
-                    if step < recipe.count, item == recipe[step] {
-                        step += 1
-                        if step == recipe.count { session.succeed() }
-                    } else {
-                        withAnimation(.default) { wobble = true }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { wobble = false }
-                    }
-                    publish()
-                    return true
-                }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(red: 1, green: 0.94, blue: 0.86))
         .onAppear { publish() }
+        .onChange(of: session.phase) { _, phase in
+            ticket = UUID()
+            lit = nil
+            inputOn = false
+            guard phase == .playing, !ended else { return }
+            if sequence.isEmpty {
+                sequence = [Int.random(in: 0..<cards.count)]
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                guard session.phase == .playing, !ended else { return }
+                playSequence()
+            }
+        }
     }
 
-    private func color(_ item: String) -> Color {
-        switch item {
-        case "Cake": Color(red: 0.95, green: 0.8, blue: 0.55)
-        case "Frosting": Color.pink.opacity(0.7)
-        case "Cookie": Color.orange.opacity(0.8)
-        default: Color.golden
+    private func card(_ index: Int) -> some View {
+        let active = lit == index
+        return Button {
+            tap(index)
+        } label: {
+            VStack(spacing: 8) {
+                Image(systemName: cards[index].symbol)
+                    .font(.system(size: 34, weight: .black))
+                Text(cards[index].name)
+                    .font(.caption.weight(.black))
+            }
+            .foregroundStyle(active ? Color.white : Color.black)
+            .frame(maxWidth: .infinity)
+            .frame(height: 128)
+            .background(active ? Color.birthdayPurple : Color.white, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(.black, lineWidth: 3))
+            .scaleEffect(active ? 1.04 : 1)
+            .animation(.easeInOut(duration: 0.12), value: active)
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(cards[index].name)
+    }
+
+    private func playSequence() {
+        guard session.phase == .playing, !ended, !sequence.isEmpty else { return }
+        inputOn = false
+        step = 0
+        lit = nil
+        prompt = "Watch the order"
+        publish()
+        let stamp = UUID()
+        ticket = stamp
+        var delay = 0.35
+        for card in sequence {
+            let shown = card
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                guard ticket == stamp, session.phase == .playing, !ended else { return }
+                lit = shown
+                QuestPixel.blip()
+            }
+            delay += 0.55
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                guard ticket == stamp, lit == shown else { return }
+                lit = nil
+            }
+            delay += 0.22
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            guard ticket == stamp, session.phase == .playing, !ended else { return }
+            lit = nil
+            inputOn = true
+            prompt = "Repeat the order"
+            publish()
+        }
+    }
+
+    private func tap(_ index: Int) {
+        guard inputOn, session.phase == .playing, !ended, step < sequence.count else { return }
+        lit = index
+        if index != sequence[step] {
+            QuestPixel.miss()
+            inputOn = false
+            misses += 1
+            prompt = misses >= 3 ? "Not this time" : "Watch it again"
+            publish()
+            if misses >= 3 {
+                ended = true
+                session.fail()
+                return
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) { playSequence() }
+            return
+        }
+        step += 1
+        if step < sequence.count {
+            QuestPixel.blip()
+            publish()
+            return
+        }
+        QuestPixel.pop()
+        inputOn = false
+        if sequence.count >= goal {
+            ended = true
+            prompt = "You remembered"
+            publish()
+            session.succeed()
+            return
+        }
+        sequence.append(Int.random(in: 0..<cards.count))
+        prompt = "Watch the order"
+        publish()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) { playSequence() }
     }
 
     private func publish() {
-        session.hud.primary = "Steps \(step)/8"
-        session.hud.secondary = step < recipe.count ? "Add \(recipe[step])" : "Done"
-        session.hud.lives = nil
+        session.hud.primary = "Order \(sequence.count)/\(goal)"
+        session.hud.secondary = prompt
+        session.hud.lives = 3 - misses
     }
 }
 
-struct LegendaryGame: View {
-    @ObservedObject var session: QuestSession
-    @State private var stage = 0
-    @State private var stageToken = 0
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Text("Stage \(stage + 1) of 4")
-                .font(.system(.headline, design: .rounded, weight: .black))
-                .padding(.top, 56)
-            Group {
-                switch stage {
-                case 0: LegendRun(playing: session.phase == .playing, token: stageToken) { advance() } fail: { stageToken += 1 }
-                case 1: LegendCatch(playing: session.phase == .playing, token: stageToken) { advance() } fail: { stageToken += 1 }
-                case 2: LegendClimb(playing: session.phase == .playing, token: stageToken) { advance() } fail: { stageToken += 1 }
-                default: LegendGrab(playing: session.phase == .playing) { advance() }
-                }
-            }
-            .id(stageToken + stage * 10)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(LinearGradient(colors: [Color.golden.opacity(0.45), Color.warmWhite], startPoint: .top, endPoint: .bottom))
-        .onChange(of: stage) { _, _ in publish() }
-        .onAppear { publish() }
-    }
-
-    private func advance() {
-        guard session.phase == .playing else { return }
-        if stage >= 3 { session.succeed() }
-        else { stage += 1 }
-    }
-
-    private func publish() {
-        session.hud.primary = "Stage \(min(stage + 1, 4))/4"
-        session.hud.secondary = ["Jump the hurdles", "Catch 6 cookies", "Tap the holds", "Grab the birthday star"][min(stage, 3)]
-        session.hud.lives = nil
-    }
-}
-
-private struct LegendRun: View {
-    var playing: Bool
-    var token: Int
-    var win: () -> Void
-    var fail: () -> Void
-    @State private var jumped = false
-    @State private var hits = 0
-    @State private var cleared = 0
-    @State private var obstacleX: CGFloat = 320
-    @State private var resolved = false
-    @State private var ended = false
-
-    var body: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .bottomLeading) {
-                Rectangle().fill(Color(red: 0.4, green: 0.75, blue: 0.4)).frame(height: 28)
-                RoccoSprite(shirt: .golden).frame(width: 40, height: 54)
-                    .offset(x: 36, y: jumped ? -70 : -8)
-                RoundedRectangle(cornerRadius: 4).fill(.orange).frame(width: 28, height: 36)
-                    .offset(x: obstacleX, y: -8)
-            }
-            .contentShape(Rectangle())
-            .onTapGesture {
-                guard playing, !jumped else { return }
-                withAnimation(.easeOut(duration: 0.18)) { jumped = true }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.42) { jumped = false }
-            }
-            .onReceive(Timer.publish(every: 0.03, on: .main, in: .common).autoconnect()) { _ in
-                guard playing, !ended else { return }
-                obstacleX -= 5
-                if obstacleX < 78 && obstacleX > 28 && !jumped && !resolved {
-                    hits += 1
-                    resolved = true
-                }
-                if obstacleX < -30 {
-                    if !resolved { cleared += 1 }
-                    resolved = false
-                    obstacleX = geo.size.width + 20
-                    if hits >= 3 { ended = true; fail() }
-                    else if cleared >= 4 { ended = true; win() }
-                }
-            }
-        }
-        .padding(.bottom, 40)
-    }
-}
-
-private struct LegendCatch: View {
-    var playing: Bool
-    var token: Int
-    var win: () -> Void
-    var fail: () -> Void
-    @State private var x: CGFloat = 160
-    @State private var cookies = 0
-    @State private var bad = 0
-    @State private var drops: [FallingBit] = []
-    @State private var ended = false
-
-    var body: some View {
-        GeometryReader { geo in
-            ZStack {
-                ForEach(drops) { drop in
-                    Circle().fill(drop.good ? Color.orange : Color.green).frame(width: 28, height: 28).position(drop.point)
-                }
-                RoccoSprite(shirt: .orange).frame(width: 40, height: 54).position(CGPoint(x: x, y: geo.size.height - 50))
-            }
-            .contentShape(Rectangle())
-            .gesture(DragGesture(minimumDistance: 0).onChanged { value in
-                guard playing else { return }
-                x = min(max(value.location.x, 30), geo.size.width - 30)
-            })
-            .onReceive(Timer.publish(every: 0.05, on: .main, in: .common).autoconnect()) { _ in
-                guard playing, !ended else { return }
-                if drops.count < 4, Int.random(in: 0...6) == 0 {
-                    drops.append(FallingBit(good: Int.random(in: 0...3) > 0, point: CGPoint(x: CGFloat.random(in: 20...(geo.size.width - 20)), y: -10)))
-                }
-                for index in drops.indices { drops[index].point.y += 7 }
-                drops.removeAll { bit in
-                    let caught = abs(bit.point.x - x) < 36 && bit.point.y > geo.size.height - 80
-                    if caught {
-                        if bit.good { cookies += 1 } else { bad += 1 }
-                    }
-                    return caught || bit.point.y > geo.size.height
-                }
-                if cookies >= 6 { ended = true; win() }
-                if bad >= 3 { ended = true; fail() }
-            }
-        }
-    }
-}
-
-private struct FallingBit: Identifiable {
-    let id = UUID()
-    var good: Bool
-    var point: CGPoint
-}
-
-private struct LegendClimb: View {
-    var playing: Bool
-    var token: Int
-    var win: () -> Void
-    var fail: () -> Void
-    @State private var step = 0
-    @State private var misses = 0
-    private let route = [0, 1, 2, 3]
-
-    var body: some View {
-        VStack(spacing: 18) {
-            Text("Tap the glowing hold").font(.headline.weight(.bold))
-            ForEach(route, id: \.self) { hold in
-                Button {
-                    guard playing else { return }
-                    if hold == step {
-                        step += 1
-                        if step >= route.count { win() }
-                    } else {
-                        misses += 1
-                        if misses >= 3 { fail() }
-                    }
-                } label: {
-                    Circle()
-                        .fill(hold == step ? Color.mint : Color.white)
-                        .frame(width: 54, height: 54)
-                        .overlay(Circle().stroke(.black, lineWidth: 3))
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-private struct LegendGrab: View {
-    var playing: Bool
-    var win: () -> Void
-    @State private var x: CGFloat = 40
-
-    var body: some View {
-        GeometryReader { geo in
-            ZStack {
-                Text("Tap the birthday star")
-                    .font(.system(.title3, design: .rounded, weight: .black))
-                    .position(x: geo.size.width / 2, y: 40)
-                Image(systemName: "star.fill")
-                    .font(.system(size: 48))
-                    .foregroundStyle(Color.golden)
-                    .padding(16)
-                    .background(.white, in: Circle())
-                    .overlay(Circle().stroke(.black, lineWidth: 3))
-                    .position(x: x, y: geo.size.height / 2)
-                    .onTapGesture { if playing { win() } }
-            }
-            .onReceive(Timer.publish(every: 0.03, on: .main, in: .common).autoconnect()) { _ in
-                guard playing else { return }
-                x += 3
-                if x > geo.size.width - 20 { x = 20 }
-            }
-        }
-    }
-}

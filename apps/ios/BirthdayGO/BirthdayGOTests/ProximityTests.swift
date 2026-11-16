@@ -213,11 +213,7 @@ struct MapRevealTests {
 
     @Test func bundledPhotosLoadOnce() {
         let drops = PhotoDropCatalog.drops()
-        #expect(drops.count == 15)
-        #expect(!drops.contains { $0.filename == "000094970013.jpg" })
-        #expect(!drops.contains { $0.filename == "000041920016.jpg" })
-        #expect(!drops.contains { $0.filename == "000041920006.jpg" })
-        #expect(!drops.contains { $0.filename == "000041920003.jpg" })
+        #expect(drops.count == 57)
         #expect(Set(drops.map(\.id)).count == drops.count)
     }
 }

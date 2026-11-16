@@ -35,8 +35,8 @@ final class BirthdayGOUITests: XCTestCase {
         XCTAssertFalse(app.tabBars.buttons["FriendDex"].exists)
         XCTAssertFalse(app.tabBars.buttons["Cookies"].exists)
         app.tabBars.buttons["Birthday Dex"].tap()
-        let remaining = app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'left to unlock'")).firstMatch
-        XCTAssertTrue(remaining.waitForExistence(timeout: 3))
+        let dexStatus = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'left to unlock' OR label == 'Every album is open.'")).firstMatch
+        XCTAssertTrue(dexStatus.waitForExistence(timeout: 3))
         app.tabBars.buttons["Messages"].tap()
         XCTAssertTrue(app.staticTexts["Birthday Messages"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.staticTexts["Sharon"].exists)

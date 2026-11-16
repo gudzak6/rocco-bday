@@ -3,10 +3,12 @@ import SwiftUI
 
 struct QuestSpriteView: UIViewRepresentable {
     let scene: SKScene
+    var acceptsTouches = true
 
     func makeUIView(context: Context) -> SKView {
         let view = SKView()
         view.ignoresSiblingOrder = true
+        view.isUserInteractionEnabled = acceptsTouches
         scene.isPaused = false
         view.presentScene(scene)
         view.isPaused = false
@@ -14,6 +16,7 @@ struct QuestSpriteView: UIViewRepresentable {
     }
 
     func updateUIView(_ view: SKView, context: Context) {
+        view.isUserInteractionEnabled = acceptsTouches
         guard view.scene !== scene else { return }
         scene.isPaused = false
         view.presentScene(scene)
@@ -45,9 +48,10 @@ struct ArcadeScreen<S: SKScene>: View {
     let lives: (S) -> Int?
     let outcome: (S) -> Int
     let setRunning: (S, Bool) -> Void
+    var controlsTouches = true
 
     var body: some View {
-        QuestSpriteView(scene: scene)
+        QuestSpriteView(scene: scene, acceptsTouches: controlsTouches)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .onAppear { setRunning(scene, phase == .playing) }
             .onChange(of: phase) { _, phase in
@@ -112,7 +116,7 @@ struct QuestPlayView: View {
     }
 
     private func syncMusic(_ phase: QuestPhase) {
-        guard (2...4).contains(level.number) else { return }
+        guard (2...3).contains(level.number) else { return }
         switch phase {
         case .playing: QuestAudio.shared.startRetroWave()
         case .paused: QuestAudio.shared.pauseMusic()
@@ -216,11 +220,10 @@ private struct QuestStageHost: View {
             switch levelNumber {
             case 1: MarathonHost(session: session, phase: phase)
             case 2: CookieHost(session: session, phase: phase)
-            case 3: ClimbingGame(session: session)
-            case 4: BoyfriendHost(session: session, phase: phase)
-            case 5: MemoryMatchGame(session: session)
-            case 6: BakeOffGame(session: session)
-            default: LegendaryGame(session: session)
+            case 3: BoyfriendHost(session: session, phase: phase)
+            case 4: MemoryMatchGame(session: session)
+            case 5: OrderMemoryGame(session: session)
+            default: LegendaryHost(session: session, phase: phase)
             }
         }
         .id(runID)
@@ -234,6 +237,77 @@ struct MarathonHost: View {
     var body: some View {
         ArcadeScreen(session: session, scene: scene, phase: phase, primary: { "\($0.meters) m" }, secondary: { "Gels \($0.gels)/5" }, lives: { 3 - $0.hits }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
             .ignoresSafeArea()
+    }
+}
+
+struct LegendaryHost: View {
+    let session: QuestSession
+    let phase: QuestPhase
+    @State private var scene = MazeScene()
+    @State private var queued: MazeHeading?
+    @State private var dragSample = CGSize.zero
+
+    var body: some View {
+        ArcadeScreen(session: session, scene: scene, phase: phase, primary: { "Cookies \($0.cookiesEaten)/\($0.cookieTotal)" }, secondary: { $0.hint }, lives: { 3 - $0.hits }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) }, controlsTouches: false)
+            .ignoresSafeArea()
+            .overlay {
+                if phase == .playing {
+                    GeometryReader { geo in
+                        let lift = max(geo.safeAreaInsets.bottom, 36)
+                        VStack(spacing: 0) {
+                            Color.clear
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                .contentShape(Rectangle())
+                                .gesture(
+                                    DragGesture(minimumDistance: 8)
+                                        .onChanged { value in
+                                            let dx = value.translation.width - dragSample.width
+                                            let dy = value.translation.height - dragSample.height
+                                            guard hypot(dx, dy) >= 14 else { return }
+                                            let heading: MazeHeading = abs(dx) > abs(dy) ? (dx > 0 ? .right : .left) : (dy > 0 ? .down : .up)
+                                            dragSample = value.translation
+                                            steer(heading)
+                                        }
+                                        .onEnded { _ in dragSample = .zero }
+                                )
+                            pad
+                                .padding(.bottom, lift + 10)
+                        }
+                    }
+                }
+            }
+    }
+
+    private var pad: some View {
+        VStack(spacing: 8) {
+            padButton(.up, "arrow.up", "Move up")
+            HStack(spacing: 36) {
+                padButton(.left, "arrow.left", "Move left")
+                padButton(.right, "arrow.right", "Move right")
+            }
+            padButton(.down, "arrow.down", "Move down")
+        }
+        .zIndex(1)
+    }
+
+    private func padButton(_ heading: MazeHeading, _ symbol: String, _ label: String) -> some View {
+        Button {
+            steer(heading)
+        } label: {
+            Image(systemName: symbol)
+                .font(.title2.weight(.black))
+                .frame(width: 84, height: 62)
+                .background(queued == heading ? Color.golden : Color.white, in: RoundedRectangle(cornerRadius: 14))
+                .overlay(RoundedRectangle(cornerRadius: 14).stroke(.black, lineWidth: 3))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
+    }
+
+    private func steer(_ heading: MazeHeading) {
+        guard scene.queue(heading) else { return }
+        queued = heading
     }
 }
 
@@ -252,37 +326,44 @@ struct BoyfriendHost: View {
     let phase: QuestPhase
     @State private var scene = BoyfriendScene()
     var body: some View {
-        ArcadeScreen(session: session, scene: scene, phase: phase, primary: { "Hearts \($0.hearts)/10" }, secondary: { $0.hint }, lives: { 3 - $0.hits }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) })
+        ArcadeScreen(session: session, scene: scene, phase: phase, primary: { "Hearts \($0.hearts)/10" }, secondary: { $0.hint }, lives: { 3 - $0.hits }, outcome: { $0.outcome }, setRunning: { $0.setRunning($1) }, controlsTouches: false)
             .ignoresSafeArea()
             .overlay(alignment: .bottom) {
                 if phase == .playing {
                     HStack(spacing: 12) {
-                        holdButton("arrow.left") { scene.inputX = $0 ? -1 : 0 }
-                        Button { scene.jumpQueued = true } label: {
-                            Text("Jump").font(.system(.headline, design: .rounded, weight: .black))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(Color.pink, in: RoundedRectangle(cornerRadius: 12))
-                                .overlay(RoundedRectangle(cornerRadius: 12).stroke(.black, lineWidth: 3))
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Jump")
-                        holdButton("arrow.right") { scene.inputX = $0 ? 1 : 0 }
+                        holdButton("arrow.left", label: "Move left") { scene.inputX = $0 ? -1 : (scene.inputX == -1 ? 0 : scene.inputX) }
+                        jumpButton
+                        holdButton("arrow.right", label: "Move right") { scene.inputX = $0 ? 1 : (scene.inputX == 1 ? 0 : scene.inputX) }
                     }
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 20)
                 }
             }
     }
 
-    private func holdButton(_ symbol: String, set: @escaping (Bool) -> Void) -> some View {
+    private var jumpButton: some View {
+        Text("Jump")
+            .font(.system(.title3, design: .rounded, weight: .black))
+            .frame(maxWidth: .infinity)
+            .frame(height: 64)
+            .background(Color.pink, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(.black, lineWidth: 3))
+            .contentShape(Rectangle())
+            .onLongPressGesture(minimumDuration: 0, maximumDistance: 80, pressing: { pressing in
+                if pressing { scene.jumpQueued = true }
+            }, perform: {})
+            .accessibilityLabel("Jump")
+    }
+
+    private func holdButton(_ symbol: String, label: String, set: @escaping (Bool) -> Void) -> some View {
         Image(systemName: symbol)
-            .font(.title2.weight(.black))
-            .frame(width: 64, height: 52)
-            .background(.white, in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(.black, lineWidth: 3))
-            .gesture(DragGesture(minimumDistance: 0).onChanged { _ in set(true) }.onEnded { _ in set(false) })
-            .accessibilityLabel(symbol == "arrow.left" ? "Move left" : "Move right")
+            .font(.title.weight(.black))
+            .frame(width: 76, height: 64)
+            .background(.white, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(RoundedRectangle(cornerRadius: 16).stroke(.black, lineWidth: 3))
+            .contentShape(Rectangle())
+            .onLongPressGesture(minimumDuration: 0, maximumDistance: 120, pressing: set, perform: {})
+            .accessibilityLabel(label)
     }
 }
 

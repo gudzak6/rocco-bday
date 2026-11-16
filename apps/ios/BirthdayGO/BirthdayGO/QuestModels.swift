@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum QuestRules {
-    static let levelCount = 7
+    static let levelCount = 6
     static var levelRange: ClosedRange<Int> { 1...levelCount }
 
     static func isUnlocked(level: Int, completed: Set<Int>) -> Bool {
@@ -44,7 +44,11 @@ final class QuestProgress: ObservableObject {
         self.defaults = defaults
         Self.migrateProgressIfNeeded(defaults: defaults)
         let saved = defaults.array(forKey: key) as? [Int] ?? []
-        completed = Set(saved)
+        let kept = saved.filter { QuestRules.levelRange.contains($0) }
+        if kept.count != saved.count {
+            defaults.set(kept.sorted(), forKey: key)
+        }
+        completed = Set(kept)
         photoAssignments = Self.loadAssignments(from: defaults, key: photosKey)
         unlockedPhotos = []
         grantPhotosForCompletedLevels()
@@ -74,11 +78,15 @@ final class QuestProgress: ObservableObject {
         var next: [Int: [String]] = [:]
         var changed = false
         for (level, names) in photoAssignments {
+            guard QuestRules.levelRange.contains(level) else {
+                changed = true
+                continue
+            }
             let cleaned = names.filter(valid.contains)
             if cleaned != names { changed = true }
             if !cleaned.isEmpty { next[level] = cleaned }
         }
-        for level in completed.sorted() {
+        for level in QuestRules.levelRange {
             var have = next[level] ?? []
             let need = QuestPhotoUnlocks.count(for: level, total: filenames.count)
             if have.count < need {
@@ -90,13 +98,29 @@ final class QuestProgress: ObservableObject {
                 changed = true
             }
         }
+        var moved = 0
+        while moved < 80 {
+            moved += 1
+            let short = QuestRules.levelRange.first {
+                (next[$0]?.count ?? 0) < QuestPhotoUnlocks.count(for: $0, total: filenames.count)
+            }
+            let fat = QuestRules.levelRange.last {
+                (next[$0]?.count ?? 0) > QuestPhotoUnlocks.count(for: $0, total: filenames.count)
+            }
+            guard let short, let fat, var from = next[fat], let name = from.popLast() else { break }
+            next[fat] = from
+            var into = next[short] ?? []
+            into.append(name)
+            next[short] = into
+            changed = true
+        }
         if changed {
             photoAssignments = next
             saveAssignments()
         } else {
             photoAssignments = next
         }
-        unlockedPhotos = completed.sorted().flatMap { photoAssignments[$0] ?? [] }
+        unlockedPhotos = QuestRules.levelRange.flatMap { photoAssignments[$0] ?? [] }
     }
 
     private func saveAssignments() {
@@ -108,20 +132,36 @@ final class QuestProgress: ObservableObject {
 
     private static func migrateProgressIfNeeded(defaults: UserDefaults) {
         let versionKey = "roccoQuest.progressVersion"
-        guard defaults.integer(forKey: versionKey) < 2 else { return }
-        let saved = defaults.array(forKey: "roccoQuest.completedLevels") as? [Int] ?? []
-        defaults.set(saved.compactMap(remapRetiredLevel).sorted(), forKey: "roccoQuest.completedLevels")
-        var next: [Int: [String]] = [:]
-        for (level, names) in loadAssignments(from: defaults, key: "roccoQuest.photosByLevel") {
-            if let mapped = remapRetiredLevel(level), next[mapped] == nil {
-                next[mapped] = names
+        let version = defaults.integer(forKey: versionKey)
+        guard version < 3 else { return }
+        var levels = Set(defaults.array(forKey: "roccoQuest.completedLevels") as? [Int] ?? [])
+        var photos = loadAssignments(from: defaults, key: "roccoQuest.photosByLevel")
+        if version < 2 {
+            levels = Set(levels.compactMap(remapRetiredLevel))
+            var remapped: [Int: [String]] = [:]
+            for (level, names) in photos {
+                if let mapped = remapRetiredLevel(level), remapped[mapped] == nil {
+                    remapped[mapped] = names
+                }
             }
+            photos = remapped
         }
-        let raw = Dictionary(uniqueKeysWithValues: next.map { (String($0.key), $0.value) })
+        var shiftedLevels = Set<Int>()
+        for level in levels {
+            if level < 3 { shiftedLevels.insert(level) }
+            else if level > 3 { shiftedLevels.insert(level - 1) }
+        }
+        var shiftedPhotos: [Int: [String]] = [:]
+        for (level, names) in photos {
+            if level < 3 { shiftedPhotos[level] = names }
+            else if level > 3 { shiftedPhotos[level - 1] = names }
+        }
+        defaults.set(shiftedLevels.sorted(), forKey: "roccoQuest.completedLevels")
+        let raw = Dictionary(uniqueKeysWithValues: shiftedPhotos.map { (String($0.key), $0.value) })
         if let data = try? JSONEncoder().encode(raw) {
             defaults.set(data, forKey: "roccoQuest.photosByLevel")
         }
-        defaults.set(2, forKey: versionKey)
+        defaults.set(3, forKey: versionKey)
     }
 
     private static func remapRetiredLevel(_ level: Int) -> Int? {
@@ -261,20 +301,9 @@ enum QuestCatalog {
         ),
         QuestLevel(
             number: 3,
-            title: "Rock Climbing Rush",
-            theme: "Climbing gym",
-            instructions: "Tap a glowing hold to climb. Pale holds are in reach. Unstable holds and far taps count as misses. Reach the top. Three misses ends the climb.",
-            accentName: "mint",
-            memorySender: "Derek",
-            memoryTitle: "The ride in",
-            memoryBody: "HAPPY BIRTHDAY!! Wishing you the happiest 27th to add to what’s already a huge year for ya! Excited for you to try out the game and manifesting a jets win for your bday 🤞🏻",
-            memoryAsset: "DerekMessage"
-        ),
-        QuestLevel(
-            number: 4,
             title: "Boyfriend of the Year",
             theme: "Date-night sky",
-            instructions: "Hold left or right to run and tap jump. Collect 10 hearts and reach the date-night door. Three falls or bumps ends the date.",
+            instructions: "Press Left or Right to run, and press Jump to hop. Collect 10 hearts and reach the date-night door. Three falls or bumps ends the date.",
             accentName: "pink",
             memorySender: "Sheba",
             memoryTitle: "Show up",
@@ -282,7 +311,7 @@ enum QuestCatalog {
             memoryAsset: "ShebaMessage"
         ),
         QuestLevel(
-            number: 5,
+            number: 4,
             title: "Memory Lane",
             theme: "Scrapbook room",
             instructions: "Tap cards to flip them. Find all 6 pairs. There is no fail state. Attempts are just part of the story.",
@@ -293,10 +322,10 @@ enum QuestCatalog {
             memoryAsset: "MaryMessage"
         ),
         QuestLevel(
-            number: 6,
-            title: "Birthday Bake-Off",
-            theme: "Birthday kitchen",
-            instructions: "Drag the next ingredient onto the cake. The recipe is on the card. A wrong ingredient bounces back so you can try again. Finish all 8 steps.",
+            number: 5,
+            title: "Remember This",
+            theme: "Four cards",
+            instructions: "Watch the four cards light up, then tap them in that order. The pattern grows to 6. A miss plays the same pattern again. Three misses end the round.",
             accentName: "orange",
             memorySender: "Everyone",
             memoryTitle: "Birthday wishes",
@@ -304,14 +333,14 @@ enum QuestCatalog {
             memoryAsset: nil
         ),
         QuestLevel(
-            number: 7,
+            number: 6,
             title: "The Legendary Rocco",
-            theme: "Golden castle",
-            instructions: "Four short stages. Jump the hurdles, catch the cookies, climb the holds, then grab the birthday star. If a stage slips, only that stage starts over.",
+            theme: "Cookie maze",
+            instructions: "Tap an arrow or swipe. Rocco stays still until you steer, then keeps going and turns at the next opening. A reverse is instant. Eat every cookie. A big cookie makes the chasers run, and you can eat them while they are scared. Three catches end the run.",
             accentName: "gold",
             memorySender: "Birthday GO",
             memoryTitle: "The Legendary Rocco",
-            memoryBody: "Seven levels, one birthday, and a city full of people who showed up. This card is yours.",
+            memoryBody: "Six levels, one birthday, and a city full of people who showed up. This card is yours.",
             memoryAsset: "ProfileCard"
         ),
     ]
